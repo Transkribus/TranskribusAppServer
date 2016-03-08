@@ -1,0 +1,11 @@
+c3p0.driverClass=oracle.jdbc.driver.OracleDriver
+c3p0.password=xxx
+c3p0.minPoolSize=2
+c3p0.acquireIncrement=1
+c3p0.maxPoolSize=10
+c3p0.idleConnectionTestPeriod=100
+c3p0.maxStatements=0
+c3p0.maxConnectionAge=3600
+c3p0.checkoutTimeout=60000
+c3p0.user=trp
+c3p0.jdbcUrl=xxx
