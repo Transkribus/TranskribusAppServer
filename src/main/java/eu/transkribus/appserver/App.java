@@ -47,14 +47,16 @@ public class App {
 	}
 	
 	public void stopApp () {
+		logger.info("Shutting down app server");
 		delegator.shutdown();
+		//TODO datasource shutdown
+		DbConnection.shutDown();
 	}
 
 	private static void registerShutdownHook(final App app) {
 		Runtime.getRuntime().addShutdownHook(new Thread(){
 			@Override
 			public void run(){
-				logger.info("Shutting down app server");
 				app.stopApp();
 			}
 		});

@@ -1,5 +1,6 @@
 package eu.transkribus.appserver.logic;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -33,13 +34,13 @@ public class JobDelegator {
 		return jobDelegator;
 	}
 	
-	public void configure(String... taskStrs) {
+	public void configure(final String... taskStrs) {
 		for(String t : taskStrs){
 			this.configure(t);
 		}
 	}
 	
-	public void configure(String taskStr) {
+	public void configure(final String taskStr) {
 		IJobExecutor executor;
 		Task task;
 		try{
@@ -52,12 +53,11 @@ public class JobDelegator {
 		final String propFileName = task.toString() + ".properties";
 		try (InputStream is = JobDelegator.class.getClassLoader().getResourceAsStream(propFileName)) {
 			if(is == null){
-				logger.info("Configuration could not be found for task: " + task.toString());
-				return;
+				throw new FileNotFoundException();
 			}
 			props.load(is);
 		} catch (IOException ioe){
-			logger.error("Configuration could not be loaded for task: " + task.toString(), ioe);
+			logger.error("Configuration could not be loaded: " + propFileName, ioe);
 			return;
 		}
 		
@@ -66,7 +66,14 @@ public class JobDelegator {
 	}
 	
 	public void delegate(List<TrpJobStatus> jobs){
-		
+		for(TrpJobStatus j : jobs){
+			if(executorMap.containsKey(j.getTask())){
+				IJobExecutor jex = executorMap.get(j.getTask());
+				jex.submit(j);
+			} else {
+				logger.debug("Ignoring unconfigured task type: " + j.getTask());
+			}
+		}
 	}
 
 	public void shutdown() {

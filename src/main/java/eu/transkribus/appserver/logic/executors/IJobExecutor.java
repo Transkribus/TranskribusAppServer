@@ -1,7 +1,9 @@
 package eu.transkribus.appserver.logic.executors;
 
+import eu.transkribus.core.model.beans.job.TrpJobStatus;
+
 public interface IJobExecutor {
-
-	void shutdown();
-
+	public void shutdown();
+	public void submit(TrpJobStatus j);
+	public String getName();
 }

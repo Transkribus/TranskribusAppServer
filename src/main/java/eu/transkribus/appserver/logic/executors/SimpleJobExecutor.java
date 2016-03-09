@@ -14,6 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import eu.transkribus.core.model.beans.job.TrpJobStatus;
+
 public class SimpleJobExecutor implements IJobExecutor {
 	private static final Logger logger = LoggerFactory.getLogger(SimpleJobExecutor.class);
 	private final String name;
@@ -42,7 +44,14 @@ public class SimpleJobExecutor implements IJobExecutor {
 		}
 	}
 	
+	@Override
 	public String getName() {
 		return this.name;
+	}
+
+	@Override
+	public void submit(TrpJobStatus j) {
+		// TODO Auto-generated method stub
+		
 	}
 }
