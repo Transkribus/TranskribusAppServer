@@ -18,8 +18,10 @@ public class App {
 	private final JobDelegator delegator;
     
 	public App(){
-		jMan = new JobManager();
 		delegator = JobDelegator.getInstance();
+		
+		//TODO create datasources for REST service and DB
+		jMan = new JobManager();
 		logger.info("DB Service name: " + DbConnection.getDbServiceName());
 	}
 	
@@ -37,8 +39,7 @@ public class App {
 				List<TrpJobStatus> jobs = jMan.getPendingJobs();
 				delegator.delegate(jobs);				
 			} catch (SQLException | ReflectiveOperationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error("Could not retrieve jobs!", e);
 			}
 			//wait for 3 secs
 			Thread.sleep(3000);

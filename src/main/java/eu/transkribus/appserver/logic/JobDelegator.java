@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -17,7 +18,7 @@ import eu.transkribus.core.model.beans.job.TrpJobStatus;
 
 public class JobDelegator {
 	private static final Logger logger = LoggerFactory.getLogger(JobDelegator.class);
-	private static JobDelegator jobEx = null;
+	private static JobDelegator jobDelegator = null;
 	
 	Map<Task, IJobExecutor> executorMap;
 	
@@ -26,10 +27,10 @@ public class JobDelegator {
 	}
 	
 	public static JobDelegator getInstance(){
-		if(jobEx == null){
-			jobEx = new JobDelegator();
+		if(jobDelegator == null){
+			jobDelegator = new JobDelegator();
 		}
-		return jobEx;
+		return jobDelegator;
 	}
 	
 	public void configure(String... taskStrs) {
@@ -39,29 +40,29 @@ public class JobDelegator {
 	}
 	
 	public void configure(String taskStr) {
-		IJobExecutor e;
+		IJobExecutor executor;
 		Task task;
 		try{
 			task = Task.valueOf(taskStr);
-		} catch (Exception ex){
+		} catch (Exception e){
 			logger.info("Could not configure unknown task: " + taskStr);
 			return;
 		}
 		Properties props = new Properties();
-		InputStream is = JobDelegator.class.getClassLoader().getResourceAsStream(task.toString() + ".properties");
-		if(is == null){
-			logger.info("Configuration could not be found for task: " + task.toString());
-			return;
-		}
-		try {
+		final String propFileName = task.toString() + ".properties";
+		try (InputStream is = JobDelegator.class.getClassLoader().getResourceAsStream(propFileName)) {
+			if(is == null){
+				logger.info("Configuration could not be found for task: " + task.toString());
+				return;
+			}
 			props.load(is);
 		} catch (IOException ioe){
 			logger.error("Configuration could not be loaded for task: " + task.toString(), ioe);
 			return;
 		}
 		
-		e = JobExecutorFactory.createExecutor(props);
-		executorMap.put(task, e);
+		executor = JobExecutorFactory.createExecutor(task.toString(), props);
+		executorMap.put(task, executor);
 	}
 	
 	public void delegate(List<TrpJobStatus> jobs){
@@ -69,7 +70,9 @@ public class JobDelegator {
 	}
 
 	public void shutdown() {
-		// TODO Auto-generated method stub
-		
+		for(Entry<Task, IJobExecutor> e : executorMap.entrySet()){
+			logger.info("Shutting down job executor for task: " + e.getKey().toString());
+			e.getValue().shutdown();
+		}
 	}
 }	
