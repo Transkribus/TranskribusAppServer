@@ -13,16 +13,22 @@ import eu.transkribus.persistence.logic.JobManager;
 
 public class App {
 	private static final Logger logger = LoggerFactory.getLogger(App.class);
+	private static App app = null;
 	private static int nrOfCores;
 	private final JobManager jMan;
 	private final JobDelegator delegator;
     
-	public App(){
+	private App(){
 		delegator = JobDelegator.getInstance();
 		
 		//TODO create datasources for REST service and DB
 		jMan = new JobManager();
 		logger.info("DB Service name: " + DbConnection.getDbServiceName());
+	}
+	
+	public static App getInstance(){
+		if(app == null) app = new App();
+		return app;
 	}
 	
 	public void run() throws InterruptedException {
@@ -63,7 +69,7 @@ public class App {
 	}
 	
 	public static void main( String[] args ) throws InterruptedException {
-    	final App app  = new App();
+    	final App app  = App.getInstance();
     	registerShutdownHook(app);
     	app.run();
     }

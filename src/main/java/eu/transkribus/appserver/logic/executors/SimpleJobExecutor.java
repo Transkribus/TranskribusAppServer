@@ -16,7 +16,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import eu.transkribus.core.model.beans.job.TrpJobStatus;
 
-public class SimpleJobExecutor implements IJobExecutor {
+public class SimpleJobExecutor extends AJobExecutor {
 	private static final Logger logger = LoggerFactory.getLogger(SimpleJobExecutor.class);
 	private final String name;
 	private static Map<String, Future<?>> futMap;
@@ -34,6 +34,12 @@ public class SimpleJobExecutor implements IJobExecutor {
 	}
 
 	@Override
+	public void submit(TrpJobStatus j) {
+		logger.debug("Trying to submit: " + j);
+		
+	}
+	
+	@Override
 	public void shutdown() {
 		logger.debug("shutting down executor: " + name);
 		ex.shutdownNow(); // sends interrupts to all running threads and stops accepting new threads!
@@ -47,11 +53,5 @@ public class SimpleJobExecutor implements IJobExecutor {
 	@Override
 	public String getName() {
 		return this.name;
-	}
-
-	@Override
-	public void submit(TrpJobStatus j) {
-		// TODO Auto-generated method stub
-		
 	}
 }

@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 public class JobExecutorFactory {
 	private static final Logger logger = LoggerFactory.getLogger(JobExecutorFactory.class);
 
-	public static IJobExecutor createExecutor(final String name, final Properties props){
+	public static AJobExecutor createExecutor(final String name, final Properties props){
 		final String type = props.getProperty("executorType");
 		switch(type){
 		case "simple":
