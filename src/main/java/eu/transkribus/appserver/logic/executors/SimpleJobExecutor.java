@@ -14,44 +14,39 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import eu.transkribus.core.model.beans.enums.Task;
 import eu.transkribus.core.model.beans.job.TrpJobStatus;
 
-public class SimpleJobExecutor implements IJobExecutor {
+public class SimpleJobExecutor extends AJobExecutor {
 	private static final Logger logger = LoggerFactory.getLogger(SimpleJobExecutor.class);
-	private final String name;
 	private static Map<String, Future<?>> futMap;
 	private static BlockingQueue<Runnable> q;
 	private static ThreadFactory tf;
 	private static ThreadPoolExecutor ex;
 	
-	public SimpleJobExecutor(final String name, final int qSize, final int corePoolSize, 
+	public SimpleJobExecutor(final Task task, final String type, final int qSize, final int corePoolSize, 
 			final int maximumPoolSize, final int keepAliveTime){
-		this.name = name;
+		super(task, type);
 		futMap = new HashMap<>();
 		q = new ArrayBlockingQueue<>(qSize);
-		tf = new ThreadFactoryBuilder().setNameFormat(name + "-%d").build();
+		tf = new ThreadFactoryBuilder().setNameFormat(task.toString() + "-%d").build();
 		ex = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.SECONDS, q, tf);
 	}
 
 	@Override
+	public void submit(TrpJobStatus j) {
+		logger.debug("Trying to submit: " + j);
+		
+	}
+	
+	@Override
 	public void shutdown() {
-		logger.debug("shutting down executor: " + name);
+		logger.debug("shutting down executor: " + task.toString());
 		ex.shutdownNow(); // sends interrupts to all running threads and stops accepting new threads!
 		try {
 			ex.awaitTermination(5, TimeUnit.SECONDS); // wait at most 5 sec's for all threads to be stopped!
 		} catch (InterruptedException e) {
 			logger.error("Error shutting down executor: "+e.getMessage(), e);
 		}
-	}
-	
-	@Override
-	public String getName() {
-		return this.name;
-	}
-
-	@Override
-	public void submit(TrpJobStatus j) {
-		// TODO Auto-generated method stub
-		
 	}
 }

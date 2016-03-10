@@ -61,7 +61,7 @@ public class JobDelegator {
 			return;
 		}
 		
-		executor = JobExecutorFactory.createExecutor(task.toString(), props);
+		executor = JobExecutorFactory.createExecutor(task, props);
 		executorMap.put(task, executor);
 	}
 	
