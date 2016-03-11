@@ -1,5 +1,7 @@
 package eu.transkribus.appserver.logic.executors;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -14,19 +16,20 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import eu.transkribus.appserver.logic.jobs.AddBaselinesJob;
 import eu.transkribus.core.model.beans.enums.Task;
 import eu.transkribus.core.model.beans.job.TrpJobStatus;
 
-public class SimpleJobExecutor extends AJobExecutor {
-	private static final Logger logger = LoggerFactory.getLogger(SimpleJobExecutor.class);
+public class StandardJobExecutor extends AJobExecutor {
+	private static final Logger logger = LoggerFactory.getLogger(StandardJobExecutor.class);
 	private static Map<String, Future<?>> futMap;
 	private static BlockingQueue<Runnable> q;
 	private static ThreadFactory tf;
 	private static ThreadPoolExecutor ex;
 	
-	public SimpleJobExecutor(final Task task, final String type, final int qSize, final int corePoolSize, 
+	public StandardJobExecutor(final Task task, final int qSize, final int corePoolSize, 
 			final int maximumPoolSize, final int keepAliveTime){
-		super(task, type);
+		super(task, "standard");
 		futMap = new HashMap<>();
 		q = new ArrayBlockingQueue<>(qSize);
 		tf = new ThreadFactoryBuilder().setNameFormat(task.toString() + "-%d").build();
@@ -34,8 +37,31 @@ public class SimpleJobExecutor extends AJobExecutor {
 	}
 
 	@Override
-	public void submit(TrpJobStatus j) {
+	public void submit(final TrpJobStatus j) {
 		logger.debug("Trying to submit: " + j);
+		
+		//TODO Check if there are resources available to submit the job into the queue
+		
+		try {
+			final Method m = AddBaselinesJob.class.getMethod("getSomething", TrpJobStatus.class);
+			
+			Runnable r = new Runnable(){
+
+				@Override
+				public void run() {
+					try {
+						m.invoke(AddBaselinesJob.class, j);
+					} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			};
+			ex.submit(r);
+		} catch (NoSuchMethodException | SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 	
