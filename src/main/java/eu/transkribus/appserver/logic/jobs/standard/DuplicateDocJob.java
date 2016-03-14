@@ -1,4 +1,4 @@
-package eu.transkribus.appserver.logic.jobs;
+package eu.transkribus.appserver.logic.jobs.standard;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package eu.transkribus.appserver.logic.jobs;
+package eu.transkribus.appserver.logic.jobs.standard;
 
 import java.io.File;
 
@@ -11,13 +11,13 @@ import eu.transkribus.core.model.beans.job.TrpJobStatus;
 import eu.transkribus.core.model.beans.mets.Mets;
 import eu.transkribus.server.logic.JobManager;
 
-public class DocImportJob extends ADocImportJob {
-	private static final Logger logger = LoggerFactory.getLogger(DocImportJob.class);
+public class MetsImportJob extends ADocImportJob {
+	private static final Logger logger = LoggerFactory.getLogger(MetsImportJob.class);
 	private final File docDir;
 	private final Mets mets;
 	private final int collectionId;
 	
-	public DocImportJob(final int collectionId, final TrpJobStatus job, Mets mets, final File docDir) {
+	public MetsImportJob(final int collectionId, final TrpJobStatus job, Mets mets, final File docDir) {
 		super(job);
 		this.docDir = docDir;
 		this.mets = mets;

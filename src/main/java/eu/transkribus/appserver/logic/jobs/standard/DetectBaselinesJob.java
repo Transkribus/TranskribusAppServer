@@ -1,4 +1,4 @@
-package eu.transkribus.appserver.logic.jobs;
+package eu.transkribus.appserver.logic.jobs.standard;
 
 import java.util.List;
 
@@ -12,21 +12,21 @@ import eu.transkribus.laserver.logic.LayoutManager;
 import eu.transkribus.persistence.logic.TranscriptManager;
 import eu.transkribus.server.logic.JobManager;
 
-public class AddBaselinesJob extends ATrpJobRunnable {
-	private static final Logger logger = LoggerFactory.getLogger(AddBaselinesJob.class);
+public class DetectBaselinesJob extends ATrpJobRunnable {
+	private static final Logger logger = LoggerFactory.getLogger(DetectBaselinesJob.class);
 	private LayoutManager lm = null;
 	protected final String imgKey;
 	protected final TrpPage page;
 	protected PcGtsType pc;
 	protected final List<String> regIds;
-	public AddBaselinesJob(final TrpJobStatus job, final TrpPage page, PcGtsType pc, List<String> regIds) {
+	public DetectBaselinesJob(final TrpJobStatus job, final TrpPage page, PcGtsType pc, List<String> regIds) {
 		super(job);
 		this.page = page;
 		this.imgKey = page.getKey();
 		this.pc = pc;
 		this.regIds = regIds;
 	}
-	public AddBaselinesJob(final TrpJobStatus job, final TrpPage page, PcGtsType pc) {
+	public DetectBaselinesJob(final TrpJobStatus job, final TrpPage page, PcGtsType pc) {
 		this(job, page, pc, null);
 	}
 		

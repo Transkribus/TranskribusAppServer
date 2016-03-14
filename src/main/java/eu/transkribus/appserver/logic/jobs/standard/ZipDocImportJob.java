@@ -1,4 +1,4 @@
-package eu.transkribus.appserver.logic.jobs;
+package eu.transkribus.appserver.logic.jobs.standard;
 
 import java.io.File;
 import java.io.IOException;

@@ -16,9 +16,9 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-import eu.transkribus.appserver.logic.jobs.AddBaselinesJob;
-import eu.transkribus.core.model.beans.enums.Task;
+import eu.transkribus.appserver.logic.jobs.standard.DetectBaselinesJob;
 import eu.transkribus.core.model.beans.job.TrpJobStatus;
+import eu.transkribus.core.model.beans.job.enums.JobType;
 
 public class StandardJobExecutor extends AJobExecutor {
 	private static final Logger logger = LoggerFactory.getLogger(StandardJobExecutor.class);
@@ -27,7 +27,7 @@ public class StandardJobExecutor extends AJobExecutor {
 	private static ThreadFactory tf;
 	private static ThreadPoolExecutor ex;
 	
-	public StandardJobExecutor(final Task task, final int qSize, final int corePoolSize, 
+	public StandardJobExecutor(final JobType task, final int qSize, final int corePoolSize, 
 			final int maximumPoolSize, final int keepAliveTime){
 		super(task, "standard");
 		futMap = new HashMap<>();
@@ -43,14 +43,14 @@ public class StandardJobExecutor extends AJobExecutor {
 		//TODO Check if there are resources available to submit the job into the queue
 		
 		try {
-			final Method m = AddBaselinesJob.class.getMethod("getSomething", TrpJobStatus.class);
+			final Method m = DetectBaselinesJob.class.getMethod("getSomething", TrpJobStatus.class);
 			
 			Runnable r = new Runnable(){
 
 				@Override
 				public void run() {
 					try {
-						m.invoke(AddBaselinesJob.class, j);
+						m.invoke(DetectBaselinesJob.class, j);
 					} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

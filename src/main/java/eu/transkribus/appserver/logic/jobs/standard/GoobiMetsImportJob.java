@@ -1,4 +1,4 @@
-package eu.transkribus.appserver.logic.jobs;
+package eu.transkribus.appserver.logic.jobs.standard;
 
 import java.io.File;
 import java.util.List;
@@ -19,18 +19,18 @@ import eu.transkribus.server.logic.JobManager;
  * @author giorgio
  *
  */
-public class SimpleGoobiImportJob extends ADocImportJob {
-	private static final Logger logger = LoggerFactory.getLogger(SimpleGoobiImportJob.class);
+public class GoobiMetsImportJob extends ADocImportJob {
+	private static final Logger logger = LoggerFactory.getLogger(GoobiMetsImportJob.class);
 	private final String path;
 	private final int collectionId;
 	private TrpDoc doc;
 	private Mets mets;
 	
-	public SimpleGoobiImportJob(final int collectionId, final TrpJobStatus job, final File dir, final Mets mets) {
+	public GoobiMetsImportJob(final int collectionId, final TrpJobStatus job, final File dir, final Mets mets) {
 		this(collectionId, job, dir.getAbsolutePath(), mets);
 	}
 	
-	public SimpleGoobiImportJob(final int collectionId, final TrpJobStatus job, final String path, final TrpDoc doc) {
+	public GoobiMetsImportJob(final int collectionId, final TrpJobStatus job, final String path, final TrpDoc doc) {
 		super(job);
 		job.setJobData(path);
 		this.path = path;
@@ -38,7 +38,7 @@ public class SimpleGoobiImportJob extends ADocImportJob {
 		this.doc = doc;
 	}
 	
-	public SimpleGoobiImportJob(final int collectionId, final TrpJobStatus job, final String path, final Mets mets) {
+	public GoobiMetsImportJob(final int collectionId, final TrpJobStatus job, final String path, final Mets mets) {
 		super(job);
 		job.setJobData(path);
 		this.path = path;

@@ -1,4 +1,4 @@
-package eu.transkribus.appserver.logic.jobs;
+package eu.transkribus.appserver.logic.jobs.standard;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

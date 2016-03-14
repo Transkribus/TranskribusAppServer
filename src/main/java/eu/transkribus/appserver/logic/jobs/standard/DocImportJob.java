@@ -1,4 +1,4 @@
-package eu.transkribus.appserver.logic.jobs;
+package eu.transkribus.appserver.logic.jobs.standard;
 
 import java.io.File;
 import java.util.List;
@@ -18,16 +18,16 @@ import eu.transkribus.server.logic.JobManager;
  * @author philip
  *
  */
-public class SimpleDocImportJob extends ADocImportJob {
-	private static final Logger logger = LoggerFactory.getLogger(SimpleDocImportJob.class);
+public class DocImportJob extends ADocImportJob {
+	private static final Logger logger = LoggerFactory.getLogger(DocImportJob.class);
 	private final String path;
 	private final int collectionId;
 	
-	public SimpleDocImportJob(final int collectionId, final TrpJobStatus job, final File dir) {
+	public DocImportJob(final int collectionId, final TrpJobStatus job, final File dir) {
 		this(collectionId, job, dir.getAbsolutePath());
 	}
 	
-	public SimpleDocImportJob(final int collectionId, final TrpJobStatus job, final String path) {
+	public DocImportJob(final int collectionId, final TrpJobStatus job, final String path) {
 		super(job);
 		job.setJobData(path);
 		this.path = path;

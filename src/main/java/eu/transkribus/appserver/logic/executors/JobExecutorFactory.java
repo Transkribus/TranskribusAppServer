@@ -5,12 +5,12 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.transkribus.core.model.beans.enums.Task;
+import eu.transkribus.core.model.beans.job.enums.JobType;
 
 public class JobExecutorFactory {
 	private static final Logger logger = LoggerFactory.getLogger(JobExecutorFactory.class);
 
-	public static AJobExecutor createExecutor(final Task task, final Properties props){
+	public static AJobExecutor createExecutor(final JobType task, final Properties props){
 		final String type = props.getProperty("executorType");
 		switch(type){
 			case "standard":
@@ -28,7 +28,7 @@ public class JobExecutorFactory {
 		}
 	}
 	
-	private static StandardJobExecutor createStandardJobExecutor(final Task task, final Properties props) throws NumberFormatException{
+	private static StandardJobExecutor createStandardJobExecutor(final JobType task, final Properties props) throws NumberFormatException{
 		final String qSizeStr = props.getProperty("qSize");
 		final String corePoolSizeStr = props.getProperty("corePoolSize");
 		final String maxPoolSizeStr = props.getProperty("maximumPoolSize");

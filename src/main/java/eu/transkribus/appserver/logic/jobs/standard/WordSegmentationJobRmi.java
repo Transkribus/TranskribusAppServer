@@ -1,4 +1,4 @@
-package eu.transkribus.appserver.logic.jobs;
+package eu.transkribus.appserver.logic.jobs.standard;
 
 import java.util.List;
 
@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import eu.transkribus.core.model.beans.TrpPage;
 import eu.transkribus.core.model.beans.job.TrpJobStatus;
 import eu.transkribus.core.model.beans.pagecontent.PcGtsType;
+import eu.transkribus.core.model.beans.pagecontent_trp.TrpPageType;
 import eu.transkribus.core.rmi.IRmiServer;
 import eu.transkribus.core.util.JaxbUtils;
 import eu.transkribus.core.util.PageXmlUtils;
@@ -15,26 +16,28 @@ import eu.transkribus.persistence.logic.TranscriptManager;
 import eu.transkribus.server.io.LaServerConn;
 import eu.transkribus.server.logic.JobManager;
 
-public class AddBaselinesJobRmi extends AddBaselinesJob {
-	private static final Logger logger = LoggerFactory.getLogger(AddBaselinesJobRmi.class);
-	
-	public AddBaselinesJobRmi(final TrpJobStatus job, final TrpPage page, PcGtsType pc, List<String> regIds) {
+public class WordSegmentationJobRmi extends WordSegmentationJob {
+	private static final Logger logger = LoggerFactory.getLogger(WordSegmentationJobRmi.class);
+	public WordSegmentationJobRmi(final TrpJobStatus job, final TrpPage page, PcGtsType pc, List<String> regIds) {
 		super(job, page, pc, regIds);
 	}
-	public AddBaselinesJobRmi(final TrpJobStatus job, final TrpPage page, PcGtsType pc) {
+	public WordSegmentationJobRmi(final TrpJobStatus job, final TrpPage page, PcGtsType pc) {
 		super(job, page, pc);
 	}
-
 	@Override
 	public void run() {
 		try {
 			
 			final String pcGts = JaxbUtils.marshalToString(pc);
 			
-			updateStatus("Running line segmentation via RMI...");
+			updateStatus("Running word segmentation via RMI...");
 			IRmiServer laServ = LaServerConn.getRemoteObject();			
-			final String newPcStr = laServ.addBaselines(imgKey, pcGts, regIds);
+			final String newPcStr = laServ.getWordSeg(imgKey, pcGts, regIds);
 			PcGtsType newPc = PageXmlUtils.unmarshal(newPcStr);
+			
+			logger.info("Updating XML IDs");
+			TrpPageType pageType = (TrpPageType)newPc.getPage();
+			pageType.updateIDsAccordingToCurrentSorting();
 			
 			updateStatus("Storing transcript...");
 			TranscriptManager tMan = new TranscriptManager();
@@ -48,7 +51,7 @@ public class AddBaselinesJobRmi extends AddBaselinesJob {
 			
 			JobManager.getInstance().finishJob(jobId, "DONE", true);
 		} catch (Exception e) {
-			logger.error("Error in RMI Baseline tool!");
+			logger.error("Error in RMI Line Segmentation!");
 			try {
 				JobManager.getInstance().finishJob(jobId, e.getMessage(), false);
 			} catch (Exception ex) {

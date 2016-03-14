@@ -1,4 +1,4 @@
-package eu.transkribus.appserver.logic.jobs;
+package eu.transkribus.appserver.logic.jobs.standard;
 
 import java.util.List;
 
@@ -9,38 +9,40 @@ import eu.transkribus.core.model.beans.TrpPage;
 import eu.transkribus.core.model.beans.job.TrpJobStatus;
 import eu.transkribus.core.model.beans.pagecontent.PcGtsType;
 import eu.transkribus.core.model.beans.pagecontent_trp.TrpPageType;
-import eu.transkribus.core.rmi.IRmiServer;
-import eu.transkribus.core.util.JaxbUtils;
-import eu.transkribus.core.util.PageXmlUtils;
+import eu.transkribus.laserver.logic.LayoutManager;
 import eu.transkribus.persistence.logic.TranscriptManager;
-import eu.transkribus.server.io.LaServerConn;
 import eu.transkribus.server.logic.JobManager;
 
-public class WordSegmentationJobRmi extends WordSegmentationJob {
-	private static final Logger logger = LoggerFactory.getLogger(WordSegmentationJobRmi.class);
-	public WordSegmentationJobRmi(final TrpJobStatus job, final TrpPage page, PcGtsType pc, List<String> regIds) {
-		super(job, page, pc, regIds);
+public class LineSegmentationJob extends ATrpJobRunnable {
+	private static final Logger logger = LoggerFactory.getLogger(LineSegmentationJob.class);
+	private LayoutManager lm = null;
+	protected final String imgKey;
+	protected final TrpPage page;
+	protected PcGtsType pc;
+	protected final List<String> regIds;
+	public LineSegmentationJob(final TrpJobStatus job, final TrpPage page, PcGtsType pc, List<String> regIds) {
+		super(job);
+		this.page = page;
+		this.imgKey = page.getKey();
+		this.pc = pc;
+		this.regIds = regIds;
 	}
-	public WordSegmentationJobRmi(final TrpJobStatus job, final TrpPage page, PcGtsType pc) {
-		super(job, page, pc);
+	public LineSegmentationJob(final TrpJobStatus job, final TrpPage page, PcGtsType pc) {
+		this(job, page, pc, null);
 	}
 	@Override
 	public void run() {
 		try {
-			
-			final String pcGts = JaxbUtils.marshalToString(pc);
-			
-			updateStatus("Running word segmentation via RMI...");
-			IRmiServer laServ = LaServerConn.getRemoteObject();			
-			final String newPcStr = laServ.getWordSeg(imgKey, pcGts, regIds);
-			PcGtsType newPc = PageXmlUtils.unmarshal(newPcStr);
+			PassThroughObserver o = new PassThroughObserver();
+			lm = new LayoutManager();
+			lm.addObserver(o);
+			PcGtsType newPc = lm.getLineSeg(imgKey, pc, regIds);
+			updateStatus("Storing transcript...");
+			TranscriptManager tMan = new TranscriptManager();
 			
 			logger.info("Updating XML IDs");
 			TrpPageType pageType = (TrpPageType)newPc.getPage();
 			pageType.updateIDsAccordingToCurrentSorting();
-			
-			updateStatus("Storing transcript...");
-			TranscriptManager tMan = new TranscriptManager();
 			
 			String toolName = null;
 			if(newPc.getMetadata().getCreator() != null && !newPc.getMetadata().getCreator().isEmpty()){
@@ -51,7 +53,6 @@ public class WordSegmentationJobRmi extends WordSegmentationJob {
 			
 			JobManager.getInstance().finishJob(jobId, "DONE", true);
 		} catch (Exception e) {
-			logger.error("Error in RMI Line Segmentation!");
 			try {
 				JobManager.getInstance().finishJob(jobId, e.getMessage(), false);
 			} catch (Exception ex) {
@@ -60,6 +61,10 @@ public class WordSegmentationJobRmi extends WordSegmentationJob {
 			}
 			logger.error(e.getMessage(), e);
 			e.printStackTrace();
-		}	
+		} finally {
+			if(lm != null){
+				lm.destroy();
+			}
+		}		
 	}
 }

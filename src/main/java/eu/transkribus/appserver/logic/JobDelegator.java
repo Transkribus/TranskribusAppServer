@@ -14,14 +14,14 @@ import org.slf4j.LoggerFactory;
 
 import eu.transkribus.appserver.logic.executors.IJobExecutor;
 import eu.transkribus.appserver.logic.executors.JobExecutorFactory;
-import eu.transkribus.core.model.beans.enums.Task;
 import eu.transkribus.core.model.beans.job.TrpJobStatus;
+import eu.transkribus.core.model.beans.job.enums.JobType;
 
 public class JobDelegator {
 	private static final Logger logger = LoggerFactory.getLogger(JobDelegator.class);
 	private static JobDelegator jobDelegator = null;
 	
-	Map<Task, IJobExecutor> executorMap;
+	Map<JobType, IJobExecutor> executorMap;
 	
 	private JobDelegator(){
 		executorMap = new HashMap<>();
@@ -42,9 +42,9 @@ public class JobDelegator {
 	
 	public void configure(final String taskStr) {
 		IJobExecutor executor;
-		Task task;
+		JobType task;
 		try{
-			task = Task.valueOf(taskStr);
+			task = JobType.valueOf(taskStr);
 		} catch (Exception e){
 			logger.info("Could not configure unknown task: " + taskStr);
 			return;
@@ -67,17 +67,17 @@ public class JobDelegator {
 	
 	public void delegate(List<TrpJobStatus> jobs){
 		for(TrpJobStatus j : jobs){
-			if(executorMap.containsKey(j.getTask())){
-				IJobExecutor jex = executorMap.get(j.getTask());
+			if(executorMap.containsKey(j.getJobImpl())){
+				IJobExecutor jex = executorMap.get(j.getJobImpl());
 				jex.submit(j);
 			} else {
-				logger.debug("Ignoring unconfigured task type: " + j.getTask());
+				logger.debug("Ignoring unconfigured task type: " + j.getJobImpl());
 			}
 		}
 	}
 
 	public void shutdown() {
-		for(Entry<Task, IJobExecutor> e : executorMap.entrySet()){
+		for(Entry<JobType, IJobExecutor> e : executorMap.entrySet()){
 			logger.info("Shutting down job executor for task: " + e.getKey().toString());
 			e.getValue().shutdown();
 		}
