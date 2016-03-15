@@ -1,12 +1,12 @@
 package eu.transkribus.appserver.logic.executors;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -16,9 +16,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-import eu.transkribus.appserver.logic.jobs.standard.DetectBaselinesJob;
 import eu.transkribus.core.model.beans.job.TrpJobStatus;
+import eu.transkribus.core.model.beans.job.enums.JobImpl;
 import eu.transkribus.core.model.beans.job.enums.JobType;
+import eu.transkribus.persistence.jobs.ATrpJobRunnable;
 
 public class StandardJobExecutor extends AJobExecutor {
 	private static final Logger logger = LoggerFactory.getLogger(StandardJobExecutor.class);
@@ -26,6 +27,8 @@ public class StandardJobExecutor extends AJobExecutor {
 	private static BlockingQueue<Runnable> q;
 	private static ThreadFactory tf;
 	private static ThreadPoolExecutor ex;
+	
+	private final static String JOBS_PACKAGE = "eu.transkribus.appserver.logic.jobs.standard.";
 	
 	public StandardJobExecutor(final JobType task, final int qSize, final int corePoolSize, 
 			final int maximumPoolSize, final int keepAliveTime){
@@ -37,32 +40,29 @@ public class StandardJobExecutor extends AJobExecutor {
 	}
 
 	@Override
-	public void submit(final TrpJobStatus j) {
-		logger.debug("Trying to submit: " + j);
-		
+	public void submit(final TrpJobStatus j) throws RejectedExecutionException {
 		//TODO Check if there are resources available to submit the job into the queue
-		
-		try {
-			final Method m = DetectBaselinesJob.class.getMethod("getSomething", TrpJobStatus.class);
-			
-			Runnable r = new Runnable(){
 
-				@Override
-				public void run() {
-					try {
-						m.invoke(DetectBaselinesJob.class, j);
-					} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			};
-			ex.submit(r);
-		} catch (NoSuchMethodException | SecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		JobImpl impl = j.getJobImpl();
+		final String clazzName = JOBS_PACKAGE + impl.getClassName();
+		ATrpJobRunnable o;
+		logger.info("Instantiating job class: " + clazzName);
+		try{
+			//try to load the class
+			Class<?> clazz = this.getClass().getClassLoader().loadClass(clazzName);
+			//find constructor that takes the jobStatus as argument
+			Constructor<?> constr = clazz.getConstructor(TrpJobStatus.class);
+			//use constructor
+			o = (ATrpJobRunnable)constr.newInstance(j);
+			//submit job into queue
+			logger.debug("Trying to submit: " + j);
+			
+			Future<?> f = ex.submit(o);
+			futMap.put(j.getJobId(), f);
+		} catch(ReflectiveOperationException e){
+			//TODO stuff
+			logger.error("Could not load a job of type " + j.getType() + "!", e);
 		}
-		
 	}
 	
 	@Override

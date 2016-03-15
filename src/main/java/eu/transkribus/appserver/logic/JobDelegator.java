@@ -4,10 +4,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,15 +44,15 @@ public class JobDelegator {
 	
 	public void configure(final String taskStr) {
 		IJobExecutor executor;
-		JobType task;
+		JobType type;
 		try{
-			task = JobType.valueOf(taskStr);
+			type = JobType.valueOf(taskStr);
 		} catch (Exception e){
 			logger.info("Could not configure unknown task: " + taskStr);
 			return;
 		}
 		Properties props = new Properties();
-		final String propFileName = task.toString() + ".properties";
+		final String propFileName = type.toString() + ".properties";
 		try (InputStream is = JobDelegator.class.getClassLoader().getResourceAsStream(propFileName)) {
 			if(is == null){
 				throw new FileNotFoundException();
@@ -61,24 +63,32 @@ public class JobDelegator {
 			return;
 		}
 		
-		executor = JobExecutorFactory.createExecutor(task, props);
-		executorMap.put(task, executor);
+		executor = JobExecutorFactory.createExecutor(type, props);
+		executorMap.put(type, executor);
 	}
 	
-	public void delegate(List<TrpJobStatus> jobs){
+	public List<TrpJobStatus> delegate(List<TrpJobStatus> jobs){
+		List<TrpJobStatus> submittedJobs = new LinkedList<>();
 		for(TrpJobStatus j : jobs){
-			if(executorMap.containsKey(j.getJobImpl())){
-				IJobExecutor jex = executorMap.get(j.getJobImpl());
-				jex.submit(j);
+			JobType type = j.getJobImpl().getTask().getJobType();
+			if(executorMap.containsKey(type)){
+				IJobExecutor jex = executorMap.get(type);
+				try {
+					jex.submit(j);
+					submittedJobs.add(j);
+				} catch (RejectedExecutionException ree){
+					logger.info("Rejected execution for job: " + j);
+				}
 			} else {
-				logger.debug("Ignoring unconfigured task type: " + j.getJobImpl());
+				logger.debug("Ignoring unconfigured job type: " + type);
 			}
 		}
+		return submittedJobs;
 	}
 
 	public void shutdown() {
 		for(Entry<JobType, IJobExecutor> e : executorMap.entrySet()){
-			logger.info("Shutting down job executor for task: " + e.getKey().toString());
+			logger.info("Shutting down job executor for job type: " + e.getKey().toString());
 			e.getValue().shutdown();
 		}
 	}

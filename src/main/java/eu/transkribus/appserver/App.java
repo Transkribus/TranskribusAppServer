@@ -1,5 +1,6 @@
 package eu.transkribus.appserver;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -34,16 +35,31 @@ public class App {
 		logger.info("Starting up...");
 		
 		//Let the job delegator configure the executors for the specific tasks, define in the properties
-		String[] tasks = Config.getString("tasks").split(",");
-		delegator.configure(tasks);
+		String[] jobTypes = Config.getString("types").split(",");
+		delegator.configure(jobTypes);
 		
 		// Check jobs periodically and let the delegator provide them to the specific executors
+		Connection conn = null;
 		while(true && !Thread.interrupted()){	
 			try {
-				List<TrpJobStatus> jobs = jMan.getPendingJobs();
-				delegator.delegate(jobs);				
+				conn = DbConnection.getConnection();
+				conn.setAutoCommit(false);
+//				conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+				List<TrpJobStatus> jobs = jMan.getPendingJobs(conn);
+				List<TrpJobStatus> submittedJobs = delegator.delegate(jobs);
+				if(!submittedJobs.isEmpty()){
+					jMan.setJobsToWaitingState(conn, submittedJobs);
+					conn.commit();
+				}
 			} catch (SQLException | ReflectiveOperationException e) {
 				logger.error("Could not retrieve jobs!", e);
+				try {
+					conn.rollback();
+				} catch (SQLException e1) {}
+			} finally {
+				try {
+					conn.close();
+				} catch (SQLException e2) {}
 			}
 			//wait for 3 secs
 			Thread.sleep(3000);
