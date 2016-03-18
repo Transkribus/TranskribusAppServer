@@ -8,12 +8,12 @@ import org.slf4j.LoggerFactory;
 
 import eu.transkribus.core.model.beans.job.enums.JobType;
 import eu.transkribus.persistence.DbConnection;
-import eu.transkribus.persistence.logic.QuartzJobManager;
+import eu.transkribus.persistence.logic.QuartzSchedulerManager;
 
 public class App {
 	private static final Logger logger = LoggerFactory.getLogger(App.class);
 	private static App app = null;
-	private final QuartzJobManager jMan;
+	private final QuartzSchedulerManager qMan;
 //	private final JobDelegator delegator;
     
 	private App() throws IOException{
@@ -21,8 +21,8 @@ public class App {
 		
 		//TODO create datasources for REST service and DB
 //		jMan = new JobManager();
-		jMan = QuartzJobManager.getInstance();
-		jMan.configure(JobType.utility, JobType.recognition, JobType.layoutAnalysis);
+		qMan = QuartzSchedulerManager.getInstance();
+		qMan.configure(JobType.utility, JobType.recognition, JobType.layoutAnalysis);
 		
 		logger.info("DB Service name: " + DbConnection.getDbServiceName());
 	}
@@ -35,7 +35,7 @@ public class App {
 	public void run() throws InterruptedException {
 		logger.info("Starting up...");
 		try {
-			jMan.startSchedulers();
+			qMan.startSchedulers();
 			logger.info("All schedulers running!");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -73,11 +73,11 @@ public class App {
 //		}
 	}
 	
-	public void stopApp () throws SchedulerException {
+	public void stopApp (boolean waitForJobsToComplete) throws SchedulerException {
 		logger.info("Shutting down app server");
 		// Shutdown the executors
 //		delegator.shutdown();
-		jMan.stopSchedulers(false);
+		qMan.stopSchedulers(waitForJobsToComplete);
 		//TODO datasource shutdown
 		DbConnection.shutDown();
 	}
@@ -87,7 +87,7 @@ public class App {
 			@Override
 			public void run(){
 				try {
-					app.stopApp();
+					app.stopApp(false);
 				} catch (SchedulerException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
