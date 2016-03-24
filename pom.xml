@@ -37,12 +37,7 @@
 			<groupId>eu.transkribus</groupId>
 			<artifactId>TranskribusPersistence</artifactId>
 			<version>0.9</version>
-		</dependency>
-		<dependency>
-			<groupId>eu.transkribus</groupId>
-			<artifactId>TranskribusInterfaces</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>    	    
+		</dependency>    
 	</dependencies>
 	<build>
 		<plugins>
