@@ -66,6 +66,9 @@
 							<classpathPrefix>${dependency-dir}/</classpathPrefix>
 							<mainClass>eu.transkribus.appserver.App</mainClass>
 						</manifest>
+						<manifestEntries>
+							<Class-Path>./</Class-Path>
+						</manifestEntries>
 					</archive>
 				</configuration>
 			</plugin>
