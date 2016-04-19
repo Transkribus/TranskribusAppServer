@@ -1,6 +1,7 @@
 package eu.transkribus.appserver;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
@@ -22,11 +23,15 @@ public class App {
 		//TODO create datasources for REST service and DB
 //		jMan = new JobManager();
 		qMan = QuartzSchedulerManager.getInstance();
-		qMan.configure(JobType.utility, JobType.recognition, JobType.layoutAnalysis);
+		
+		String[] jobTypes = Config.getString("types").split(",");
+		ArrayList<JobType> jobTypesList = parseJobTypes(jobTypes);
+		
+		qMan.configure(jobTypesList.toArray(new JobType[jobTypesList.size()]));
 		
 		logger.info("DB Service name: " + DbConnection.getDbServiceName());
 	}
-	
+
 	public static App getInstance() throws IOException{
 		if(app == null) app = new App();
 		return app;
@@ -94,6 +99,20 @@ public class App {
 				}
 			}
 		});
+	}
+	
+	private ArrayList<JobType> parseJobTypes(String[] jobTypes) {
+		ArrayList<JobType> jobTypesList = new ArrayList<>(jobTypes.length);
+		for(String s : jobTypes){
+			try{
+				JobType j = JobType.valueOf(s);
+				jobTypesList.add(j);
+			} catch (IllegalArgumentException e){
+				logger.error("Illegal job Type in Config: " + s);
+				continue;
+			}
+		}
+		return jobTypesList;
 	}
 	
 	public static void main( String[] args ) throws InterruptedException, IOException {
