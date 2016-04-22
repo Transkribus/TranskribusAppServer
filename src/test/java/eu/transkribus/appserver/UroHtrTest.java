@@ -73,7 +73,7 @@ public class UroHtrTest {
 			
 //			BufferedImage bi = ImageUtils.convertToBufferedImage(p.getUrl());
 			Image i = new Image(p.getUrl());
-			i.convert(Type.JAVA);
+			i.getImageBufferedImage(true);
 			
 			File inFile = getter.saveFile(tmd.getKey(), workDirIn.getAbsolutePath());
 			

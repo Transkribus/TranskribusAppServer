@@ -9,12 +9,12 @@ import org.slf4j.LoggerFactory;
 
 import eu.transkribus.core.model.beans.job.enums.JobType;
 import eu.transkribus.persistence.DbConnection;
-import eu.transkribus.persistence.logic.QuartzSchedulerManager;
+import eu.transkribus.persistence.logic.QuartzClusteredSchedulerManager;
 
 public class App {
 	private static final Logger logger = LoggerFactory.getLogger(App.class);
 	private static App app = null;
-	private final QuartzSchedulerManager qMan;
+	private final QuartzClusteredSchedulerManager qMan;
 //	private final JobDelegator delegator;
     
 	private App() throws IOException{
@@ -22,7 +22,7 @@ public class App {
 		
 		//TODO create datasources for REST service and DB
 //		jMan = new JobManager();
-		qMan = QuartzSchedulerManager.getInstance();
+		qMan = QuartzClusteredSchedulerManager.getInstance();
 		
 		String[] jobTypes = Config.getString("types").split(",");
 		ArrayList<JobType> jobTypesList = parseJobTypes(jobTypes);
