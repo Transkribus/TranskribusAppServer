@@ -1,10 +1,7 @@
 package eu.transkribus.appserver;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.sql.SQLException;
 
 import javax.persistence.EntityNotFoundException;
@@ -24,9 +21,8 @@ import eu.transkribus.core.model.beans.TrpPage;
 import eu.transkribus.core.model.beans.TrpTranscriptMetadata;
 import eu.transkribus.core.model.beans.pagecontent.PcGtsType;
 import eu.transkribus.core.util.PageXmlUtils;
-import eu.transkribus.interfaces.IBaseLine2Coords;
+import eu.transkribus.interfaces.IBaseline2Polygon;
 import eu.transkribus.interfaces.types.Image;
-import eu.transkribus.interfaces.types.Image.Type;
 import eu.transkribus.persistence.io.FimgStoreRwConnection;
 import eu.transkribus.persistence.logic.DocManager;
 import eu.transkribus.persistence.logic.TranscriptManager;
@@ -36,8 +32,8 @@ public class UroHtrTest {
 	public static void main(String[] args) throws IOException, InvalidParameterException, EntityNotFoundException, ReflectiveOperationException, SQLException, JAXBException, AuthenticationException {
 		logger.info("Loading module...");
 
-		String s = "/home/philip/programme/gundram/module-0.0.1/modules/b2p/20160405_dft.bin";
-		IBaseLine2Coords laParser = (IBaseLine2Coords) IO.load(new File(s));
+		String s = "/mnt/dea_scratch/tmp_philip/read/gundram/module-0.0.1/modules/b2p/20160405_dft.bin";
+		IBaseline2Polygon laParser = (IBaseline2Polygon) IO.load(new File(s));
 		
 //		System.setProperty("vendorName", "asd");
 //		Object o = load(new File("/tmp/test.bin"));
@@ -73,20 +69,20 @@ public class UroHtrTest {
 			
 //			BufferedImage bi = ImageUtils.convertToBufferedImage(p.getUrl());
 			Image i = new Image(p.getUrl());
-			i.getImageBufferedImage(true);
+			i.getImageBufferedImage();
 			
 			File inFile = getter.saveFile(tmd.getKey(), workDirIn.getAbsolutePath());
 			
 			logger.info("Running LA");
 			
-			File outFile = new File(workDirOut.getAbsolutePath() + File.separator + inFile.getName());
+//			File outFile = new File(workDirOut.getAbsolutePath() + File.separator + inFile.getName());
 			try{
-				laParser.process(i, inFile.getAbsolutePath(), outFile.getAbsolutePath());
+				laParser.process(i, inFile.getAbsolutePath(), null, null);//, outFile.getAbsolutePath());
 			} catch (RuntimeException e){
 				logger.error("Failed to process page "+ p.getPageNr(),e);
 				continue;
 			}
-			PcGtsType pc = PageXmlUtils.unmarshal(outFile);
+			PcGtsType pc = PageXmlUtils.unmarshal(inFile);
 			
 			logger.info("Running HTR on page: " + p.getPageNr());
 			hTRParser.process("/tmp/bentham.bin", i, pc, "/tmp", null, null);
