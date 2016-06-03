@@ -1,6 +1,5 @@
 package eu.transkribus.appserver;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -50,24 +49,14 @@ public class Config {
 
 	protected static Properties loadProps(String filename){
 		logger.debug("Load properties file: " + filename);
-//		if(props == null){
-		props = new Properties();
-//		}
-		InputStream is = null;
-		try{
-			is = AConf.class.getClassLoader().getResourceAsStream(filename);
+		Properties props = new Properties();
+
+		try(InputStream is = AConf.class.getClassLoader().getResourceAsStream(filename)){
 			props.load(is);
 		} catch (Exception e) {
 			logger.debug("Could not find properties file: " + filename);
 		}
-		finally{
-			try {
-				is.close();
-			} catch (IOException e) {
-				logger.warn("Could not close resource stream");
-				//ignore
-			}
-		}
+		
 		return props;
 	}
 }
