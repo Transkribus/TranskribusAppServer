@@ -24,10 +24,10 @@ public class App {
 //		jMan = new JobManager();
 		qMan = QuartzClusteredSchedulerManager.getInstance();
 		
-		String[] jobTypes = Config.getString("types").split(",");
-		ArrayList<JobType> jobTypesList = parseJobTypes(jobTypes);
+		final String jobTypes = Config.getString("types");
+		final JobType[] jobTypesArr = parseJobTypes(jobTypes);
 		
-		qMan.configure(jobTypesList.toArray(new JobType[jobTypesList.size()]));
+		qMan.configure(jobTypesArr);
 		
 		logger.info("DB Service name: " + DbConnection.getDbServiceName());
 	}
@@ -78,7 +78,7 @@ public class App {
 //		}
 	}
 	
-	public void stopApp (boolean waitForJobsToComplete) throws SchedulerException {
+	public void shutdown (boolean waitForJobsToComplete) throws SchedulerException {
 		logger.info("Shutting down app server");
 		// Shutdown the executors
 //		delegator.shutdown();
@@ -92,7 +92,7 @@ public class App {
 			@Override
 			public void run(){
 				try {
-					app.stopApp(false);
+					app.shutdown(false);
 				} catch (SchedulerException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -101,7 +101,14 @@ public class App {
 		});
 	}
 	
-	private ArrayList<JobType> parseJobTypes(String[] jobTypes) {
+	/**
+	 * Parses the CSV String from the properties file and converts it to an array of enum types
+	 * @param jobTypesStr a CSV String with valid JobType values
+	 * @return An array with according JobType enum values
+	 */
+	private JobType[] parseJobTypes(String jobTypesStr) {
+		String[] jobTypes = jobTypesStr.split(",");
+		
 		ArrayList<JobType> jobTypesList = new ArrayList<>(jobTypes.length);
 		for(String s : jobTypes){
 			try{
@@ -112,7 +119,7 @@ public class App {
 				continue;
 			}
 		}
-		return jobTypesList;
+		return jobTypesList.toArray(new JobType[jobTypesList.size()]);
 	}
 	
 	public static void main( String[] args ) throws InterruptedException, IOException {
