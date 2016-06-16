@@ -41,6 +41,12 @@
 		</dependency>
 	</dependencies>
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -126,4 +132,27 @@
 			</plugin>
 		</plugins>
 	</build>
+	
+	<profiles>	
+		<profile>
+			<id>test</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<c3p0.jdbcUrl>jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=kora3-vip.intra.uibk.ac.at)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=kora4-vip.intra.uibk.ac.at)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=DEAT.intra.uibk.ac.at)))</c3p0.jdbcUrl>
+			</properties>
+		</profile>
+
+		<profile>
+			<id>prod</id>
+			<activation>
+<!-- 				<activeByDefault>true</activeByDefault> -->
+			</activation>
+			<properties>
+				<c3p0.jdbcUrl>jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=lora3-vip.intra.uibk.ac.at)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=lora4-vip.intra.uibk.ac.at)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=DEA.intra.uibk.ac.at)))</c3p0.jdbcUrl>
+			</properties>
+		</profile>
+	</profiles>
+	
 </project>
