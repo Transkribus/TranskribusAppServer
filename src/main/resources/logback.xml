@@ -8,6 +8,7 @@
 <!-- http://www.qos.ch/shop/products/professionalSupport -->
 <!-- -->
 <configuration>
+
 	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
 			<pattern>%d{MM/dd HH:mm:ss.SSS} %5p | [%c{1}] %m%n</pattern>
@@ -16,11 +17,11 @@
 	<appender name="SIFT" class="ch.qos.logback.classic.sift.SiftingAppender">
 		<discriminator>
 			<key>jobId</key>
-			<defaultValue>${machineName}</defaultValue>
+			<defaultValue>${HOST_NAME}</defaultValue>
 		</discriminator>
 		<sift>
 			<appender name="FILE-${jobId}" class="ch.qos.logback.core.FileAppender">
-				<file>/mnt/transkribus/logs/job-${jobId}.log</file>
+				<file>/mnt/transkribus/logs/${appName}/job-${jobId}.log</file>
 				<layout class="ch.qos.logback.classic.PatternLayout">
 					<pattern>%d [%thread] %level %mdc %logger{35} - %msg%n</pattern>
 				</layout>

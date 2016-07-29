@@ -1,8 +1,6 @@
 package eu.transkribus.appserver;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import org.apache.log4j.MDC;
@@ -16,20 +14,13 @@ import eu.transkribus.persistence.DbConnection;
 import eu.transkribus.persistence.logic.QuartzClusteredSchedulerManager;
 
 public class App {
+	static {	
+		MDC.put("appName", Config.getString("appName"));
+	}
 	private static final Logger logger = LoggerFactory.getLogger(App.class);
 	private static App app = null;
 	private final QuartzClusteredSchedulerManager qMan;
 	// private final JobDelegator delegator;
-
-	static {
-		String machineName;
-		try {
-			machineName = InetAddress.getLocalHost().getHostName();
-		} catch (UnknownHostException e) {
-			machineName = "unknown";
-		}
-		MDC.put("machineName", machineName);
-	}
 
 	private App() throws IOException {
 		// delegator = JobDelegator.getInstance();

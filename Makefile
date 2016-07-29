@@ -1,7 +1,15 @@
 all:
 	mvn clean install -f ../TranskribusCore/pom.xml
+	mvn clean install -f ../TranskribusSearch
 	mvn clean install -f ../interfaces/pom.xml
 	mvn clean install -f ../CITlabModule/pom.xml
+	mvn clean install -f ../TranskribusPersistence/pom.xml
+	mvn clean install
+
+all-wo-modules:
+	mvn clean install -f ../TranskribusCore/pom.xml
+	mvn clean install -f ../TranskribusSearch
+	mvn clean install -f ../interfaces/pom.xml
 	mvn clean install -f ../TranskribusPersistence/pom.xml
 	mvn clean install
 

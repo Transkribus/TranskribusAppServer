@@ -38,7 +38,7 @@
 			<groupId>eu.transkribus</groupId>
 			<artifactId>TranskribusPersistence</artifactId>
 			<version>1.0</version>
-		</dependency>
+		</dependency>	
 	</dependencies>
 	<build>
 		<finalName>${appName}-${project.version}</finalName>
@@ -134,8 +134,8 @@
 			</plugin>
 		</plugins>
 	</build>
-	
-	<profiles>	
+
+	<profiles>
 		<profile>
 			<id>test</id>
 			<activation>
@@ -158,5 +158,5 @@
 			</properties>
 		</profile>
 	</profiles>
-	
+
 </project>
