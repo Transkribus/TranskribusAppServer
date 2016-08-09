@@ -34,6 +34,7 @@
 				<include>quartz_recognition.properties</include>
 				<include>quartz_utility.properties</include>
 				<include>logback.xml</include>
+				<include>solr.properties</include>
 				<include>TranskribusAppServer.sh</include>
 			</includes>
 		</fileSet>

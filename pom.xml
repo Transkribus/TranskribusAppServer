@@ -139,22 +139,24 @@
 		<profile>
 			<id>test</id>
 			<activation>
-<!-- 				<activeByDefault>true</activeByDefault> -->
+				<activeByDefault>true</activeByDefault>
 			</activation>
 			<properties>
 				<appName>appserver-test</appName>
 				<c3p0.jdbcUrl>jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=kora3-vip.intra.uibk.ac.at)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=kora4-vip.intra.uibk.ac.at)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=DEAT.intra.uibk.ac.at)))</c3p0.jdbcUrl>
+				<solr.url>http://dbis-faxe.uibk.ac.at:8983/solr/TrpTest</solr.url>
 			</properties>
 		</profile>
 
 		<profile>
 			<id>prod</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>
+<!-- 				<activeByDefault>true</activeByDefault> -->
 			</activation>
 			<properties>
 				<appName>appserver</appName>
 				<c3p0.jdbcUrl>jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=lora3-vip.intra.uibk.ac.at)(PORT=1521))(ADDRESS=(PROTOCOL=TCP)(HOST=lora4-vip.intra.uibk.ac.at)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=DEA.intra.uibk.ac.at)))</c3p0.jdbcUrl>
+				<solr.url>http://dbis-faxe.uibk.ac.at:8983/solr/Trp</solr.url>
 			</properties>
 		</profile>
 	</profiles>
