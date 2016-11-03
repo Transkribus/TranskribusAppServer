@@ -172,8 +172,8 @@ public class RnnHtrTrainingJob extends ATrpJob {
 		
 		setJobStatusProgress("Creating HTR...");
 		
-		String[] props2 = PropertyUtil.setProperty(null, "dict", "true");
-        props2 = PropertyUtil.setProperty(props2, "stat", "true");
+//		String[] props2 = PropertyUtil.setProperty(null, "dict", "true");
+//        props2 = PropertyUtil.setProperty(props2, "stat", "true");
         TrainHtr instance = new TrainHtr();
         
         final File htrInFile = new File(workDir.getAbsolutePath() + File.separator +  modelName + "_raw.sprnn");
@@ -191,7 +191,7 @@ public class RnnHtrTrainingJob extends ATrpJob {
 			}
         } else {
 	        instance.createHtr(htrInFile.getAbsolutePath(), 
-	        		trainDataPath + File.separator + HtrUtils.CHARACTER_MAP_NAME, props2);
+	        		trainDataPath + File.separator + HtrUtils.CHARACTER_MAP_NAME, null);
         }
         
         if (!htrInFile.exists()) {
