@@ -115,7 +115,7 @@ public class UroHtrTrainingJob extends ATrpJob {
 		//create gt document
 		TrpDoc gt;
 		try {
-			gt = docMan.duplicateDocument("TRAIN_URO_" + config.getModelName(), userId, userName, config.getTrainList());
+			gt = docMan.duplicateDocument("TRAIN_URO_" + config.getModelName(), userId, userName, config.getTrain());
 		
 			colMan.addDocToCollection(gt.getId(), -1);
 		} catch (Exception e2) {
@@ -147,7 +147,7 @@ public class UroHtrTrainingJob extends ATrpJob {
 		
 		String testDataPath = null;
 		//create Test data if applicable
-		if(config.getTestList() != null && !config.getTestList().isEmpty()) {
+		if(config.getTest() != null && !config.getTest().isEmpty()) {
 			
 			//init path
 			final String testInputPath = workDir.getAbsolutePath() + File.separator + "testInput";
@@ -165,7 +165,7 @@ public class UroHtrTrainingJob extends ATrpJob {
 			TrpDoc testGt;
 			try {
 				testGt = docMan.duplicateDocument("TEST_URO_" + config.getModelName(), userId, userName, 
-						config.getTestList());
+						config.getTest());
 				
 				colMan.addDocToCollection(gt.getId(), -1);
 			} catch (Exception e2) {
@@ -205,14 +205,14 @@ public class UroHtrTrainingJob extends ATrpJob {
 		setJobStatusProgress("Creating HTR...");
         
         File htrInFile;
-        final Integer baseModelId;
+        final Integer baseHtrId;
         if(config.getBaseModelId() == null) {
 //        	String[] htrInitProps = PropertyUtil.setProperty(null, "dict", "true");
 //            htrInitProps = PropertyUtil.setProperty(htrInitProps, "stat", "true");
 	        htrInFile = new File(workDir.getAbsolutePath() + File.separator +  config.getModelName() + "_raw.sprnn");
 	        trainer.createHtr(htrInFile.getAbsolutePath(), 
 	        		trainDataPath + File.separator + HtrUtils.CHARACTER_MAP_NAME, null);
-	        baseModelId = null;
+	        baseHtrId = null;
 	        if (!htrInFile.exists()) {
 	            setJobStatusFailed("Could not create HTR file at " + htrInFile.getAbsolutePath() + "!");
 	            return;
@@ -228,14 +228,14 @@ public class UroHtrTrainingJob extends ATrpJob {
 				setJobStatusFailed("Server error. Could not retrieve base HTR model!", e);
 				return;
 			}
-        	baseModelId = config.getBaseModelId();
+        	baseHtrId = config.getBaseModelId();
         	htrInFile = new File(htrIn.getPath());
         }
   
         setJobStatusProgress("Training HTR...");
         
         File htrOutFile = new File(workDir.getAbsolutePath() + File.separator +  config.getModelName() + ".sprnn");
-        String[] htrTrainProps = PropertyUtil.setProperty(null, "NumEpochs", config.getNumEpochs()); //"200"); //5;2");
+        String[] htrTrainProps = PropertyUtil.setProperty(null, "NumEpochs", ""+config.getNumEpochs()); //"200"); //5;2");
         htrTrainProps = PropertyUtil.setProperty(htrTrainProps, "LearningRate", config.getLearningRate()); //"2e-3"); //5e-3;1e-3");
         htrTrainProps = PropertyUtil.setProperty(htrTrainProps, "Noise", config.getNoise()); //"no");
         htrTrainProps = PropertyUtil.setProperty(htrTrainProps, "Threads", ""+nrOfThreads);
@@ -260,7 +260,8 @@ public class UroHtrTrainingJob extends ATrpJob {
 	        htr.setPath(filename);
 	        htr.setProvider("CITlab");
 	        htr.setDescription(config.getDescription());
-	        htr.setBaseModelId(baseModelId);
+	        htr.setBaseHtrId(baseHtrId);
+	        htr.setTrainJobId(jobId);
 	        
 	        htrMan.storeHtr(config.getColId(), htr);
 	        	        
