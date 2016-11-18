@@ -66,6 +66,16 @@ public class UroHtrTrainingJob extends ATrpJob {
 			throw new JobExecutionException("No Config!", false);
 		}
 		
+		//create workdir
+		try {
+			workDir = LocalStorage.createHtrTempDir();
+		} catch (IOException e) {
+			setJobStatusFailed("Could not create workdir!", e);
+			return;
+		}
+		final String workDirPath = workDir.getAbsolutePath();
+		logger.info("Writing output to: " + workDirPath);
+		
 		//init trainer and properties
 		TrainHtr trainer = new TrainHtr();
 		String[] createTrainDataProps = PropertyUtil.setProperty(null, "dict", "true");
@@ -103,16 +113,6 @@ public class UroHtrTrainingJob extends ATrpJob {
 		opts.useOcrMasterDir = false;
 		opts.writeMets = false;
 		opts.fileNamePattern = "${pageId}";
-		
-		//create workdir
-		try {
-			workDir = LocalStorage.createHtrTempDir();
-		} catch (IOException e) {
-			setJobStatusFailed("Could not create workdir!", e);
-			return;
-		}
-		final String workDirPath = workDir.getAbsolutePath();
-		logger.info("Writing output to: " + workDirPath);
 		
 		//create gt document
 		TrpDoc gt;
