@@ -22,10 +22,12 @@ import org.slf4j.LoggerFactory;
 import de.uro.citlab.module.baseline2polygon.B2PSeamMultiOriented;
 import de.uro.citlab.module.baseline2polygon.Baseline2PolygonParser;
 import de.uro.citlab.module.train.TrainHtr;
+import de.uro.citlab.module.types.Key;
 import de.uro.citlab.module.util.PropertyUtil;
 import eu.transkribus.core.io.DocExporter;
 import eu.transkribus.core.io.DocExporter.ExportOptions;
 import eu.transkribus.core.io.util.ImgPriority;
+import eu.transkribus.core.model.beans.TrpCollection;
 import eu.transkribus.core.model.beans.TrpDoc;
 import eu.transkribus.core.model.beans.TrpHtr;
 import eu.transkribus.core.model.beans.UroHtrTrainConfig;
@@ -83,7 +85,7 @@ public class UroHtrTrainingJob extends ATrpJob {
 		
 		//init htrModel base path
 		String htrModelBasePath = TrpPersistenceConf.getString("htr_model_base_path");
-		htrModelBasePath += "/" + DbConnection.getDbServiceName() + "/net";
+		htrModelBasePath += "/" + DbConnection.getDbServiceName() + "/URO";
 		File htrModelBaseDir = new File(htrModelBasePath);
 		if(!htrModelBaseDir.isDirectory()) {
 			htrModelBaseDir.mkdirs();
@@ -116,8 +118,9 @@ public class UroHtrTrainingJob extends ATrpJob {
 		TrpDoc gt;
 		try {
 			gt = docMan.duplicateDocument("TRAIN_URO_" + config.getModelName(), userId, userName, config.getTrain());
-		
-			colMan.addDocToCollection(gt.getId(), -1);
+			
+			TrpCollection c = colMan.getCollectionByLabel(CollectionManager.URO_HTR_GT_LABEL);
+			colMan.addDocToCollection(gt.getId(), c.getColId());
 		} catch (Exception e2) {
 			setJobStatusFailed("Could not create TRAIN GT document!", e2);
 			return;
@@ -232,6 +235,9 @@ public class UroHtrTrainingJob extends ATrpJob {
         	htrInFile = new File(htrIn.getPath());
         }
   
+        String cerFilePath = workDir.getAbsolutePath() + File.separator + HtrManager.URO_CER_FILENAME;
+        File cerFile = new File(cerFilePath);
+        
         setJobStatusProgress("Training HTR...");
         
         File htrOutFile = new File(workDir.getAbsolutePath() + File.separator +  config.getModelName() + ".sprnn");
@@ -240,24 +246,31 @@ public class UroHtrTrainingJob extends ATrpJob {
         htrTrainProps = PropertyUtil.setProperty(htrTrainProps, "Noise", config.getNoise()); //"no");
         htrTrainProps = PropertyUtil.setProperty(htrTrainProps, "Threads", ""+nrOfThreads);
         htrTrainProps = PropertyUtil.setProperty(htrTrainProps, "TrainSizePerEpoch", ""+config.getTrainSizePerEpoch()); //"1000");
+        htrTrainProps = PropertyUtil.setProperty(htrTrainProps, Key.PATH_ERROR_LOG, cerFile.getAbsolutePath()); 
         trainer.trainHtr(htrInFile.getAbsolutePath(), htrOutFile.getAbsolutePath(), trainDataPath, testDataPath, htrTrainProps);
 		
         int htrId;
 		try {
 			htrId = htrMan.getNextHtrId();
 		
-			String filename = htrId + "_" + config.getModelName() + ".sprnn";
+			String htrModelPath = htrModelBasePath + File.separator +  + htrId + "_" + config.getModelName();
+			File htrModelDir = new File(htrModelPath);
+			htrModelDir.mkdirs();
 			
-	        File htrStoreFile = new File(htrModelBasePath + File.separator 
-	        		+ filename);
+	        File htrStoreFile = new File(htrModelPath + File.separator 
+	        		+ HtrManager.URO_SPRNN_FILENAME);
 	        Files.move(htrOutFile.toPath(), htrStoreFile.toPath());
+	        
+	        File cerStoreFile = new File(htrModelPath + File.separator
+	        		+ HtrManager.URO_CER_FILENAME);
+	        Files.move(cerFile.toPath(), cerStoreFile.toPath());
 			
 	        TrpHtr htr = new TrpHtr();
 	        htr.setHtrId(htrId);
 	        htr.setCreated(new java.sql.Timestamp(System.currentTimeMillis()));
 	        htr.setGtDocId(gt.getId());
 	        htr.setName(config.getModelName());
-	        htr.setPath(filename);
+	        htr.setPath(htrModelPath);
 	        htr.setProvider("CITlab");
 	        htr.setDescription(config.getDescription());
 	        htr.setBaseHtrId(baseHtrId);
