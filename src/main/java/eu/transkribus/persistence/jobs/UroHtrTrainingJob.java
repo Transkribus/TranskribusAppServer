@@ -59,6 +59,9 @@ public class UroHtrTrainingJob extends ATrpJob {
 	
 	private Observer jobUpdateObserver = new JobUpdateObserver();
 	
+	private TrpDoc gt = null;
+	private TrpDoc testGt = null;
+	
 	@Override
 	public void doProcess(JobExecutionContext context) throws JobExecutionException, JobCanceledException {
 		
@@ -114,13 +117,18 @@ public class UroHtrTrainingJob extends ATrpJob {
 		opts.writeMets = false;
 		opts.fileNamePattern = "${pageId}";
 		
+		TrpCollection uroGtCollection;
+		try {
+			uroGtCollection = colMan.getCollectionByLabel(CollectionManager.URO_HTR_GT_LABEL);
+		} catch (EntityNotFoundException | SQLException | ReflectiveOperationException e3) {
+			setJobStatusFailed("Could not find URO GT collection!", e3);
+			return;
+		}
+		
 		//create gt document
-		TrpDoc gt;
 		try {
 			gt = docMan.duplicateDocument("TRAIN_URO_" + config.getModelName(), userId, userName, config.getTrain());
-			
-			TrpCollection c = colMan.getCollectionByLabel(CollectionManager.URO_HTR_GT_LABEL);
-			colMan.addDocToCollection(gt.getId(), c.getColId());
+			colMan.addDocToCollection(gt.getId(), uroGtCollection.getColId());
 		} catch (Exception e2) {
 			setJobStatusFailed("Could not create TRAIN GT document!", e2);
 			return;
@@ -130,10 +138,10 @@ public class UroHtrTrainingJob extends ATrpJob {
 		
 		//export gt document
 		try {
-//			TrpDoc doc = docMan.getDocById(gt.getId());
 			ex.exportDoc(gt, opts);
 		} catch(Exception e){
 			setJobStatusFailed("Could not export Train GT document " + gt.getId(), e);
+			deleteDocs();
 			return;
 		}
 		
@@ -145,6 +153,7 @@ public class UroHtrTrainingJob extends ATrpJob {
 			input = baseline2polygon(laParser, trainInputDir);
 		} catch(IOException ioe) {
 			setJobStatusFailed(ioe.getMessage(), ioe);
+			deleteDocs();
 			return;
 		}
 		
@@ -165,14 +174,15 @@ public class UroHtrTrainingJob extends ATrpJob {
 			//set exporter opts
 			opts.dir = testInputPath;
 			
-			TrpDoc testGt;
+			
 			try {
 				testGt = docMan.duplicateDocument("TEST_URO_" + config.getModelName(), userId, userName, 
 						config.getTest());
 				
-				colMan.addDocToCollection(gt.getId(), -1);
+				colMan.addDocToCollection(testGt.getId(), uroGtCollection.getColId());
 			} catch (Exception e2) {
 				setJobStatusFailed("Could not create TEST GT document!", e2);
+				deleteDocs();
 				return;
 			}
 			
@@ -181,7 +191,8 @@ public class UroHtrTrainingJob extends ATrpJob {
 			try {
 				ex.exportDoc(testGt, opts);
 			} catch(Exception e){
-				setJobStatusFailed("Could not export Train GT document " + gt.getId(), e);
+				setJobStatusFailed("Could not export TEST GT document " + gt.getId(), e);
+				deleteDocs();
 				return;
 			}
 				
@@ -192,18 +203,21 @@ public class UroHtrTrainingJob extends ATrpJob {
 				valInput = baseline2polygon(laParser, testInputDir);
 			} catch(IOException ioe) {
 				setJobStatusFailed(ioe.getMessage(), ioe);
+				deleteDocs();
 				return;
 			}
 			
 			setJobStatusProgress("Creating test data...");
 			
 			//create Test Data
-			trainer.createTrainData(valInput, testDataPath, testDataPath + File.separator + HtrUtils.CHARACTER_MAP_NAME, createTrainDataProps);
+			trainer.createTrainData(valInput, testDataPath, testDataPath + File.separator + HtrManager.CHAR_MAP_FILENAME, createTrainDataProps);
 		}
 		
 		setJobStatusProgress("Creating train data...");
 		
-		trainer.createTrainData(input, trainDataPath, trainDataPath + File.separator + HtrUtils.CHARACTER_MAP_NAME, createTrainDataProps);
+		File charMapFile = new File(trainDataPath + File.separator + HtrManager.CHAR_MAP_FILENAME);
+		
+		trainer.createTrainData(input, trainDataPath, charMapFile.getAbsolutePath(), createTrainDataProps);
 		
 		setJobStatusProgress("Creating HTR...");
         
@@ -212,12 +226,13 @@ public class UroHtrTrainingJob extends ATrpJob {
         if(config.getBaseModelId() == null) {
 //        	String[] htrInitProps = PropertyUtil.setProperty(null, "dict", "true");
 //            htrInitProps = PropertyUtil.setProperty(htrInitProps, "stat", "true");
-	        htrInFile = new File(workDir.getAbsolutePath() + File.separator +  config.getModelName() + "_raw.sprnn");
+	        htrInFile = new File(workDir.getAbsolutePath() + File.separator + "net_in.sprnn");
 	        trainer.createHtr(htrInFile.getAbsolutePath(), 
-	        		trainDataPath + File.separator + HtrUtils.CHARACTER_MAP_NAME, null);
+	        		charMapFile.getAbsolutePath(), null);
 	        baseHtrId = null;
 	        if (!htrInFile.exists()) {
 	            setJobStatusFailed("Could not create HTR file at " + htrInFile.getAbsolutePath() + "!");
+	            deleteDocs();
 	            return;
 	        }
         } else {
@@ -226,13 +241,22 @@ public class UroHtrTrainingJob extends ATrpJob {
 				htrIn = htrMan.getHtrById(config.getBaseModelId());
 			} catch (EntityNotFoundException enfe) {
 				setJobStatusFailed("Bad config! Base HTR model does not exist!");
+				deleteDocs();
 				return;
 			} catch (SQLException | ReflectiveOperationException e) {
 				setJobStatusFailed("Server error. Could not retrieve base HTR model!", e);
+				deleteDocs();
 				return;
 			}
         	baseHtrId = config.getBaseModelId();
-        	htrInFile = new File(htrIn.getPath());
+        	File htrInDir = new File(htrIn.getPath());
+        	htrInFile = new File(htrInDir.getAbsolutePath() + File.separator + HtrManager.URO_SPRNN_FILENAME);   
+        	if(!htrInFile.isFile()) {
+        		setJobStatusFailed("Server error! Base HTR model file does not exist!");
+        		deleteDocs();
+        		return;
+        	}
+        		
         }
   
         String cerFilePath = workDir.getAbsolutePath() + File.separator + HtrManager.URO_CER_FILENAME;
@@ -240,7 +264,7 @@ public class UroHtrTrainingJob extends ATrpJob {
         
         setJobStatusProgress("Training HTR...");
         
-        File htrOutFile = new File(workDir.getAbsolutePath() + File.separator +  config.getModelName() + ".sprnn");
+        File htrOutFile = new File(workDir.getAbsolutePath() + File.separator +  HtrManager.URO_SPRNN_FILENAME);
         String[] htrTrainProps = PropertyUtil.setProperty(null, "NumEpochs", ""+config.getNumEpochs()); //"200"); //5;2");
         htrTrainProps = PropertyUtil.setProperty(htrTrainProps, "LearningRate", config.getLearningRate()); //"2e-3"); //5e-3;1e-3");
         htrTrainProps = PropertyUtil.setProperty(htrTrainProps, "Noise", config.getNoise()); //"no");
@@ -252,10 +276,12 @@ public class UroHtrTrainingJob extends ATrpJob {
         int htrId;
 		try {
 			htrId = htrMan.getNextHtrId();
-		
-			String htrModelPath = htrModelBasePath + File.separator +  + htrId + "_" + config.getModelName();
+			String htrModelPath = htrModelBasePath + File.separator + htrId;
 			File htrModelDir = new File(htrModelPath);
-			htrModelDir.mkdirs();
+			if(!htrModelDir.mkdirs()) {
+				setJobStatusFailed("Could not store HTR file!");
+				return;
+			}
 			
 	        File htrStoreFile = new File(htrModelPath + File.separator 
 	        		+ HtrManager.URO_SPRNN_FILENAME);
@@ -264,6 +290,11 @@ public class UroHtrTrainingJob extends ATrpJob {
 	        File cerStoreFile = new File(htrModelPath + File.separator
 	        		+ HtrManager.URO_CER_FILENAME);
 	        Files.move(cerFile.toPath(), cerStoreFile.toPath());
+	        
+	        File charMapStoreFile = new File(htrModelPath + File.separator 
+	        		+ HtrManager.CHAR_MAP_FILENAME);
+	        Files.move(charMapFile.toPath(), charMapStoreFile.toPath());
+	        		
 			
 	        TrpHtr htr = new TrpHtr();
 	        htr.setHtrId(htrId);
@@ -275,14 +306,16 @@ public class UroHtrTrainingJob extends ATrpJob {
 	        htr.setDescription(config.getDescription());
 	        htr.setBaseHtrId(baseHtrId);
 	        htr.setTrainJobId(jobId);
+	        htr.setLanguage(config.getLanguage());
+	        htr.setTestGtDocId(testGt == null ? null : testGt.getId());
 	        
 	        htrMan.storeHtr(config.getColId(), htr);
-	        	        
+	        	  
+	        workDir.delete();
 		} catch (IOException | SQLException | ReflectiveOperationException e1) {
 			setJobStatusFailed("Could not persist HTR model!", e1);
+			deleteDocs();
 			return;
-		} finally {
-			workDir.delete();
 		}
 		
 		//send mail to user
@@ -303,6 +336,23 @@ public class UroHtrTrainingJob extends ATrpJob {
 		}
 	}
 
+	private void deleteDocs() {
+		if(gt != null) {
+			try {
+				docMan.deleteDoc(gt.getId());
+			} catch (SQLException e) {
+				logger.error("Could not delete GT document!", e);
+			}
+		}
+		if(testGt != null) {
+			try {
+				docMan.deleteDoc(testGt.getId());
+			} catch (SQLException e) {
+				logger.error("Could not delete Test GT document!", e);
+			}
+		}
+	}
+	
 	private String[] baseline2polygon(IBaseline2Polygon laParser, File inputDir) throws IOException {
 		String[] pageXmls = inputDir.list(new FilenameFilter() {
 			@Override

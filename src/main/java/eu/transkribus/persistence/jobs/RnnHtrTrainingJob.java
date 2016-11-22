@@ -30,6 +30,7 @@ import eu.transkribus.persistence.io.LocalStorage;
 import eu.transkribus.persistence.jobs.abstractJobs.ATrpJob;
 import eu.transkribus.persistence.jobs.htr.util.JobCanceledException;
 import eu.transkribus.persistence.logic.DocManager;
+import eu.transkribus.persistence.logic.HtrManager;
 
 public class RnnHtrTrainingJob extends ATrpJob {
 	private static final Logger logger = LoggerFactory.getLogger(RnnHtrTrainingJob.class);
@@ -168,7 +169,7 @@ public class RnnHtrTrainingJob extends ATrpJob {
 		
 		String[] props = PropertyUtil.setProperty(null, "dict", "true");
         props = PropertyUtil.setProperty(props, "stat", "true");
-		trainer.createTrainData(input, trainDataPath, trainDataPath + File.separator + HtrUtils.CHARACTER_MAP_NAME, props);
+		trainer.createTrainData(input, trainDataPath, trainDataPath + File.separator + HtrManager.CHAR_MAP_FILENAME, props);
 		
 		setJobStatusProgress("Creating HTR...");
 		
@@ -191,7 +192,7 @@ public class RnnHtrTrainingJob extends ATrpJob {
 			}
         } else {
 	        instance.createHtr(htrInFile.getAbsolutePath(), 
-	        		trainDataPath + File.separator + HtrUtils.CHARACTER_MAP_NAME, null);
+	        		trainDataPath + File.separator + HtrManager.CHAR_MAP_FILENAME, null);
         }
         
         if (!htrInFile.exists()) {
