@@ -32,7 +32,6 @@ import eu.transkribus.core.model.beans.TrpDoc;
 import eu.transkribus.core.model.beans.TrpHtr;
 import eu.transkribus.core.model.beans.UroHtrTrainConfig;
 import eu.transkribus.core.model.beans.auth.TrpUser;
-import eu.transkribus.core.util.HtrUtils;
 import eu.transkribus.interfaces.IBaseline2Polygon;
 import eu.transkribus.interfaces.types.Image;
 import eu.transkribus.persistence.DbConnection;
@@ -223,19 +222,11 @@ public class CITlabHtrTrainingJob extends ATrpJob {
         
         File htrInFile;
         final Integer baseHtrId;
-        if(config.getBaseModelId() == null) {
-//        	String[] htrInitProps = PropertyUtil.setProperty(null, "dict", "true");
-//            htrInitProps = PropertyUtil.setProperty(htrInitProps, "stat", "true");
-	        htrInFile = new File(workDir.getAbsolutePath() + File.separator + "net_in.sprnn");
-	        trainer.createHtr(htrInFile.getAbsolutePath(), 
-	        		charMapFile.getAbsolutePath(), null);
-	        baseHtrId = null;
-	        if (!htrInFile.exists()) {
-	            setJobStatusFailed("Could not create HTR file at " + htrInFile.getAbsolutePath() + "!");
-	            deleteDocs();
-	            return;
-	        }
-        } else {
+        htrInFile = new File(workDir.getAbsolutePath() + File.separator + "net_in.sprnn");
+        
+        String[] createHtrProps = null;
+        
+        if(config.getBaseModelId() != null) {
         	TrpHtr htrIn;
         	try {
 				htrIn = htrMan.getHtrById(config.getBaseModelId());
@@ -250,13 +241,24 @@ public class CITlabHtrTrainingJob extends ATrpJob {
 			}
         	baseHtrId = config.getBaseModelId();
         	File htrInDir = new File(htrIn.getPath());
-        	htrInFile = new File(htrInDir.getAbsolutePath() + File.separator + HtrManager.CITLAB_SPRNN_FILENAME);   
-        	if(!htrInFile.isFile()) {
+        	File baseHtrFile = new File(htrInDir.getAbsolutePath() + File.separator + HtrManager.CITLAB_SPRNN_FILENAME);   
+        	if(!baseHtrFile.isFile()) {
         		setJobStatusFailed("Server error! Base HTR model file does not exist!");
         		deleteDocs();
         		return;
         	}
-        		
+        	createHtrProps = PropertyUtil.setProperty(createHtrProps, Key.PATH_NET, baseHtrFile.getAbsolutePath());
+        } else {
+        	baseHtrId = null;
+        }
+        
+        trainer.createHtr(htrInFile.getAbsolutePath(), 
+        		charMapFile.getAbsolutePath(), createHtrProps);
+
+        if (!htrInFile.exists()) {
+            setJobStatusFailed("Could not create HTR file at " + htrInFile.getAbsolutePath() + "!");
+            deleteDocs();
+            return;
         }
   
         String cerFilePath = workDir.getAbsolutePath() + File.separator + HtrManager.CITLAB_CER_FILENAME;
