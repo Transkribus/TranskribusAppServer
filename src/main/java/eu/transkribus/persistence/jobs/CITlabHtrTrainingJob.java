@@ -46,8 +46,8 @@ import eu.transkribus.persistence.logic.DocManager;
 import eu.transkribus.persistence.logic.HtrManager;
 import eu.transkribus.persistence.util.MailUtils;
 
-public class UroHtrTrainingJob extends ATrpJob {
-	private static final Logger logger = LoggerFactory.getLogger(UroHtrTrainingJob.class);
+public class CITlabHtrTrainingJob extends ATrpJob {
+	private static final Logger logger = LoggerFactory.getLogger(CITlabHtrTrainingJob.class);
 	private UroHtrTrainConfig config;
 	private Integer nrOfThreads;
 	
@@ -250,7 +250,7 @@ public class UroHtrTrainingJob extends ATrpJob {
 			}
         	baseHtrId = config.getBaseModelId();
         	File htrInDir = new File(htrIn.getPath());
-        	htrInFile = new File(htrInDir.getAbsolutePath() + File.separator + HtrManager.URO_SPRNN_FILENAME);   
+        	htrInFile = new File(htrInDir.getAbsolutePath() + File.separator + HtrManager.CITLAB_SPRNN_FILENAME);   
         	if(!htrInFile.isFile()) {
         		setJobStatusFailed("Server error! Base HTR model file does not exist!");
         		deleteDocs();
@@ -259,12 +259,12 @@ public class UroHtrTrainingJob extends ATrpJob {
         		
         }
   
-        String cerFilePath = workDir.getAbsolutePath() + File.separator + HtrManager.URO_CER_FILENAME;
+        String cerFilePath = workDir.getAbsolutePath() + File.separator + HtrManager.CITLAB_CER_FILENAME;
         File cerFile = new File(cerFilePath);
         
         setJobStatusProgress("Training HTR...");
         
-        File htrOutFile = new File(workDir.getAbsolutePath() + File.separator +  HtrManager.URO_SPRNN_FILENAME);
+        File htrOutFile = new File(workDir.getAbsolutePath() + File.separator +  HtrManager.CITLAB_SPRNN_FILENAME);
         String[] htrTrainProps = PropertyUtil.setProperty(null, "NumEpochs", ""+config.getNumEpochs()); //"200"); //5;2");
         htrTrainProps = PropertyUtil.setProperty(htrTrainProps, "LearningRate", config.getLearningRate()); //"2e-3"); //5e-3;1e-3");
         htrTrainProps = PropertyUtil.setProperty(htrTrainProps, "Noise", config.getNoise()); //"no");
@@ -284,11 +284,11 @@ public class UroHtrTrainingJob extends ATrpJob {
 			}
 			
 	        File htrStoreFile = new File(htrModelPath + File.separator 
-	        		+ HtrManager.URO_SPRNN_FILENAME);
+	        		+ HtrManager.CITLAB_SPRNN_FILENAME);
 	        Files.move(htrOutFile.toPath(), htrStoreFile.toPath());
 	        
 	        File cerStoreFile = new File(htrModelPath + File.separator
-	        		+ HtrManager.URO_CER_FILENAME);
+	        		+ HtrManager.CITLAB_CER_FILENAME);
 	        Files.move(cerFile.toPath(), cerStoreFile.toPath());
 	        
 	        File charMapStoreFile = new File(htrModelPath + File.separator 
