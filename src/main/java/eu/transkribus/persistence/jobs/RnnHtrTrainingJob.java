@@ -78,7 +78,6 @@ public class RnnHtrTrainingJob extends ATrpJob {
 		opts.dir = inputPath;
 		opts.doWriteImages = true;
 		opts.exportAltoXml = false;
-		opts.exportFatXml = false;
 		opts.exportPageXml = true;
 		opts.pageDirName = "";
 		opts.useOcrMasterDir = false;

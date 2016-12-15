@@ -109,7 +109,6 @@ public class CITlabHtrTrainingJob extends ATrpJob {
 		opts.dir = trainInputPath;
 		opts.doWriteImages = true;
 		opts.exportAltoXml = false;
-		opts.exportFatXml = false;
 		opts.exportPageXml = true;
 		opts.pageDirName = "";
 		opts.useOcrMasterDir = false;
