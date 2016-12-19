@@ -28,6 +28,7 @@ import eu.transkribus.core.model.beans.TrpHtr;
 import eu.transkribus.core.model.beans.TrpPage;
 import eu.transkribus.core.model.beans.TrpTranscriptMetadata;
 import eu.transkribus.core.model.beans.auth.TrpUser;
+import eu.transkribus.core.model.beans.enums.EditStatus;
 import eu.transkribus.core.model.beans.job.TrpJobStatus;
 import eu.transkribus.core.model.beans.pagecontent.PcGtsType;
 import eu.transkribus.core.util.CoreUtils;
@@ -196,7 +197,8 @@ public class CITlabHtrJob extends ATrpJob {
 			setJobStatusProgress("HTR done on page: " + p.getPageNr() + ". Storing...");
 			
 			try {
-				tMan.updateTranscript(p.getPageId(), null, 43, userName, pc, toolName);
+				tMan.updateTranscript(p.getPageId(), EditStatus.IN_PROGRESS, 43, userName, pc, 
+						toolName, false, tmd.getTsId(), null);
 			} catch (AuthenticationException | SQLException | ReflectiveOperationException | JAXBException
 					| IOException e) {
 				setJobStatusFailed("Could not update transcript for page " + pageNr, e);
