@@ -30,7 +30,7 @@ import eu.transkribus.core.io.util.ImgPriority;
 import eu.transkribus.core.model.beans.TrpCollection;
 import eu.transkribus.core.model.beans.TrpDoc;
 import eu.transkribus.core.model.beans.TrpHtr;
-import eu.transkribus.core.model.beans.UroHtrTrainConfig;
+import eu.transkribus.core.model.beans.CitLabHtrTrainConfig;
 import eu.transkribus.core.model.beans.auth.TrpUser;
 import eu.transkribus.interfaces.IBaseline2Polygon;
 import eu.transkribus.interfaces.types.Image;
@@ -47,7 +47,7 @@ import eu.transkribus.persistence.util.MailUtils;
 
 public class CITlabHtrTrainingJob extends ATrpJob {
 	private static final Logger logger = LoggerFactory.getLogger(CITlabHtrTrainingJob.class);
-	private UroHtrTrainConfig config;
+	private CitLabHtrTrainConfig config;
 	private Integer nrOfThreads;
 	
 	private File workDir;
@@ -117,15 +117,15 @@ public class CITlabHtrTrainingJob extends ATrpJob {
 		
 		TrpCollection uroGtCollection;
 		try {
-			uroGtCollection = colMan.getCollectionByLabel(CollectionManager.URO_HTR_GT_LABEL);
+			uroGtCollection = colMan.getCollectionByLabel(CollectionManager.CITLAB_HTR_GT_LABEL);
 		} catch (EntityNotFoundException | SQLException | ReflectiveOperationException e3) {
-			setJobStatusFailed("Could not find URO GT collection!", e3);
+			setJobStatusFailed("Could not find CITlab GT collection!", e3);
 			return;
 		}
 		
 		//create gt document
 		try {
-			gt = docMan.duplicateDocument("TRAIN_URO_" + config.getModelName(), userId, userName, config.getTrain());
+			gt = docMan.duplicateDocument("TRAIN_CITlab_" + config.getModelName(), userId, userName, config.getTrain());
 			colMan.addDocToCollection(gt.getId(), uroGtCollection.getColId());
 		} catch (Exception e2) {
 			setJobStatusFailed("Could not create TRAIN GT document!", e2);
@@ -174,7 +174,7 @@ public class CITlabHtrTrainingJob extends ATrpJob {
 			
 			
 			try {
-				testGt = docMan.duplicateDocument("TEST_URO_" + config.getModelName(), userId, userName, 
+				testGt = docMan.duplicateDocument("TEST_CITlab_" + config.getModelName(), userId, userName, 
 						config.getTest());
 				
 				colMan.addDocToCollection(testGt.getId(), uroGtCollection.getColId());
@@ -303,7 +303,7 @@ public class CITlabHtrTrainingJob extends ATrpJob {
 	        htr.setGtDocId(gt.getId());
 	        htr.setName(config.getModelName());
 	        htr.setPath(htrModelPath);
-	        htr.setProvider("CITlab");
+	        htr.setProvider(HtrManager.PROVIDER_CITLAB);
 	        htr.setDescription(config.getDescription());
 	        htr.setBaseHtrId(baseHtrId);
 	        htr.setTrainJobId(jobId);
@@ -413,7 +413,7 @@ public class CITlabHtrTrainingJob extends ATrpJob {
 		return input;
 	}
 
-	public void setConfig(UroHtrTrainConfig config){
+	public void setConfig(CitLabHtrTrainConfig config){
 		this.config = config;
 	}
 
