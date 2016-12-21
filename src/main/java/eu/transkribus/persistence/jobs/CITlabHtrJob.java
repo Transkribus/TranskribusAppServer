@@ -12,6 +12,7 @@ import javax.xml.bind.JAXBException;
 
 import org.apache.http.auth.AuthenticationException;
 import org.dea.fimgstoreclient.FimgStoreGetClient;
+import org.dea.fimgstoreclient.FimgStorePostClient;
 import org.dea.fimgstoreclient.beans.ImgType;
 import org.dea.fimgstoreclient.utils.FimgStoreUriBuilder;
 import org.quartz.JobExecutionContext;
@@ -31,10 +32,13 @@ import eu.transkribus.core.model.beans.auth.TrpUser;
 import eu.transkribus.core.model.beans.enums.EditStatus;
 import eu.transkribus.core.model.beans.job.TrpJobStatus;
 import eu.transkribus.core.model.beans.pagecontent.PcGtsType;
+import eu.transkribus.core.model.beans.pagecontent_trp.TrpPageType;
+import eu.transkribus.core.model.beans.pagecontent_trp.TrpTextLineType;
 import eu.transkribus.core.util.CoreUtils;
 import eu.transkribus.core.util.PageXmlUtils;
 import eu.transkribus.interfaces.IBaseline2Polygon;
 import eu.transkribus.interfaces.types.Image;
+import eu.transkribus.persistence.DbConnection;
 import eu.transkribus.persistence.dao.UserDao;
 import eu.transkribus.persistence.io.FimgStoreRwConnection;
 import eu.transkribus.persistence.io.LocalStorage;
@@ -43,6 +47,7 @@ import eu.transkribus.persistence.jobs.htr.util.JobCanceledException;
 import eu.transkribus.persistence.logic.DocManager;
 import eu.transkribus.persistence.logic.HtrManager;
 import eu.transkribus.persistence.logic.TranscriptManager;
+import eu.transkribus.persistence.util.FimgStoreUtils;
 import eu.transkribus.persistence.util.MailUtils;
 
 public class CITlabHtrJob extends ATrpJob {
@@ -53,6 +58,8 @@ public class CITlabHtrJob extends ATrpJob {
 	private Integer modelId;
 	private String dictName;
 //	private String state = JobConst.STATE_HTR;
+	
+	
 	
 	@Override
 	public void doProcess(JobExecutionContext context) throws JobExecutionException, JobCanceledException {
@@ -204,6 +211,8 @@ public class CITlabHtrJob extends ATrpJob {
 				setJobStatusFailed("Could not update transcript for page " + pageNr, e);
 				return;
 			}
+			
+			storeConfMats(p.getPageId(), pc, workDir);
 		}
 		
 		try {
@@ -269,6 +278,41 @@ public class CITlabHtrJob extends ATrpJob {
 //	public void setState(String state) {
 //		this.state = state;
 //	}
+
+	private void storeConfMats(final int pageId, PcGtsType pc, File workDir) throws JobCanceledException {
+		List<TrpTextLineType> lines = ((TrpPageType)pc.getPage()).getLines();
+		FimgStorePostClient poster = FimgStoreRwConnection.getPostClient();
+		try {
+			hMan.clearHtrOutput(pageId);
+		} catch (SQLException | ReflectiveOperationException e1) {
+			logger.error("Could not clear HTR output for page ID = " + pageId, e1);
+		}
+		for(TrpTextLineType l : lines) {
+			setJobStatusProgress("Storing ConfMat for line ID = " + l.getId());
+			
+			String path = workDir.getAbsolutePath() + File.separator + l.getId() + HtrManager.CITLAB_CM_EXT;
+			File cm = new File(path);
+			if(!cm.isFile()) {
+				logger.error("Could not find ConfMat for line with id = " + l.getId());
+				continue;
+			}
+			final String key;
+			try {
+				key = poster.postFile(cm, 
+						FimgStoreUtils.getFimgStoreCollectionName(docId, DbConnection.getDbServiceName()), 4);
+			} catch (AuthenticationException | IOException e) {
+				logger.error("Could not upload ConfMat for line with id = " + l.getId());
+				continue;
+			}
+			try {
+				hMan.storeHtrOutput(pageId, l.getId(), HtrManager.PROVIDER_CITLAB, key, modelId);
+			} catch (SQLException | ReflectiveOperationException e) {
+				logger.error("Could not insert HTR output!", e);
+				continue;
+			}
+		}
+		
+	}
 
 	public void setModelId(final Integer modelId) {
 		this.modelId = modelId;
