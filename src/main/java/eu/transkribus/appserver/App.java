@@ -70,7 +70,7 @@ public class App {
 			e.printStackTrace();
 		}
 		// //Let the job delegator configure the executors for the specific
-		// tasks, define in the properties
+		// tasks, defined in the properties
 		// String[] jobTypes = Config.getString("types").split(",");
 		// delegator.configure(jobTypes);
 		//
