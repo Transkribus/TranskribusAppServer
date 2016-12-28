@@ -1,43 +1,44 @@
 package eu.transkribus.appserver;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.MDC;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eu.transkribus.appserver.logic.JobDelegator;
+import eu.transkribus.core.model.beans.job.TrpJobStatus;
 import eu.transkribus.core.model.beans.job.enums.JobType;
 import eu.transkribus.interfaces.types.util.SysPathUtils;
 import eu.transkribus.persistence.DbConnection;
-import eu.transkribus.persistence.logic.QuartzClusteredSchedulerManager;
+import eu.transkribus.persistence.logic.JobManager;
 
 public class App {
-	static {	
+	static {
 		MDC.put("appName", Config.getString("appName"));
 	}
+
 	private static final Logger logger = LoggerFactory.getLogger(App.class);
 	private static App app = null;
-	private final QuartzClusteredSchedulerManager qMan;
-	// private final JobDelegator delegator;
+
+	private final JobDelegator delegator;
+	private final JobManager jMan;
 
 	private App() throws IOException {
-		// delegator = JobDelegator.getInstance();
+		delegator = JobDelegator.getInstance();
 
 		// TODO create datasources for REST service and DB
-		// jMan = new JobManager();
-
-		
-
-		qMan = QuartzClusteredSchedulerManager.getInstance();
+		jMan = new JobManager();
 
 		final String jobTypes = Config.getString("types");
 		final JobType[] jobTypesArr = parseJobTypes(jobTypes);
 
 		Config.checkSetup(jobTypesArr);
-		
-		qMan.configure(jobTypesArr);
 
 		logger.info("DB Service name: " + DbConnection.getDbServiceName());
 
@@ -62,52 +63,38 @@ public class App {
 
 	public void run() throws InterruptedException {
 		logger.info("Starting up...");
-		try {
-			qMan.startSchedulers();
-			logger.info("All schedulers running!");
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		// //Let the job delegator configure the executors for the specific
+
+		// Let the job delegator configure the executors for the specific
 		// tasks, defined in the properties
-		// String[] jobTypes = Config.getString("types").split(",");
-		// delegator.configure(jobTypes);
-		//
-		// // Check jobs periodically and let the delegator provide them to the
+		JobType[] jobTypes = parseJobTypes(Config.getString("types"));
+		delegator.configure(jobTypes);
+
+		// Check jobs periodically and let the delegator provide them to the
 		// specific executors
-		// Connection conn = null;
-		// while(true && !Thread.interrupted()){
-		// try {
-		// conn = DbConnection.getConnection();
-		// conn.setAutoCommit(false);
-		//// conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-		// List<TrpJobStatus> jobs = jMan.getPendingJobs(conn);
-		// List<TrpJobStatus> submittedJobs = delegator.delegate(jobs);
-		// if(!submittedJobs.isEmpty()){
-		// jMan.setJobsToWaitingState(conn, submittedJobs);
-		// conn.commit();
-		// }
-		// } catch (SQLException | ReflectiveOperationException e) {
-		// logger.error("Could not retrieve jobs!", e);
-		// try {
-		// conn.rollback();
-		// } catch (SQLException e1) {}
-		// } finally {
-		// try {
-		// conn.close();
-		// } catch (SQLException e2) {}
-		// }
-		// //wait for 3 secs
-		// Thread.sleep(3000);
-		// }
+		while (true && !Thread.interrupted()) {
+			try (Connection conn = DbConnection.getConnection();){
+				List<TrpJobStatus> jobs = jMan.getPendingJobs(conn);
+				for(TrpJobStatus j : jobs) {
+					if(delegator.isConfiguredForJob(j) && jMan.setJobToWaitingState(conn, j)){
+						if(!delegator.delegate(j)) {
+							jMan.resetJob(j);
+						}
+					} else {
+						continue;
+					}
+				}
+			} catch (SQLException | ReflectiveOperationException e) {
+				logger.error("Could access DB!", e);
+			}
+			// wait for 3 secs
+			Thread.sleep(3000);
+		}
 	}
 
 	public void shutdown(boolean waitForJobsToComplete) throws SchedulerException {
 		logger.info("Shutting down app server");
 		// Shutdown the executors
-		// delegator.shutdown();
-		qMan.stopSchedulers(waitForJobsToComplete);
+		delegator.shutdown();
 		// TODO datasource shutdown
 		DbConnection.shutDown();
 	}
