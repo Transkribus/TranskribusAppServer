@@ -28,13 +28,15 @@ public class App {
 		// TODO create datasources for REST service and DB
 		// jMan = new JobManager();
 
-		Config.checkSetup();
+		
 
 		qMan = QuartzClusteredSchedulerManager.getInstance();
 
 		final String jobTypes = Config.getString("types");
 		final JobType[] jobTypesArr = parseJobTypes(jobTypes);
 
+		Config.checkSetup(jobTypesArr);
+		
 		qMan.configure(jobTypesArr);
 
 		logger.info("DB Service name: " + DbConnection.getDbServiceName());
@@ -47,7 +49,7 @@ public class App {
 		try {
 			System.loadLibrary("TranskribusInterfacesWrapper");
 		} catch (UnsatisfiedLinkError e) {
-			throw new RuntimeException("Could not find .so file(s):" + e.getMessage(), e);
+			throw new RuntimeException("Could not load .so file(s):" + e.getMessage(), e);
 		}
 
 	}

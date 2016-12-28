@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import eu.transkribus.core.io.util.AConf;
 import eu.transkribus.core.model.beans.job.enums.JobImpl;
+import eu.transkribus.core.model.beans.job.enums.JobType;
 import eu.transkribus.persistence.TrpPersistenceConf;
 
 public class Config {
@@ -65,8 +66,9 @@ public class Config {
 
 	/**
 	 * TODO
+	 * @param jobTypes 
 	 */
-	public static void checkSetup() {
+	public static void checkSetup(JobType[] jobTypes) {
 		//check NAS storage availability
 		final String httpUploadStoragePath = TrpPersistenceConf.getString("http_upload_storage");
 		if(!new File(httpUploadStoragePath).isDirectory()){
@@ -75,11 +77,15 @@ public class Config {
 		//check system time!? -- too inaccurate
 				
 		//check libraries
-		for(JobImpl i : JobImpl.values()){
-			if(i.getLibName() != null){
-				final String lib = TrpPersistenceConf.getString("lib_path") + i.getLibName();
-				if(!new File(lib).exists()){
-					throw new RuntimeException("Library file for " + i.getLabel() + " does not exist! " + lib);
+		for(JobType j : jobTypes) {
+			for(JobImpl i : JobImpl.values()) {
+				if(j.equals(i.getTask().getJobType())) {
+					if(i.getLibName() != null){
+						final String lib = TrpPersistenceConf.getString("lib_path") + i.getLibName();
+						if(!new File(lib).exists()){
+							throw new RuntimeException("Library file for " + i.getLabel() + " does not exist! " + lib);
+						}
+					}
 				}
 			}
 		}
