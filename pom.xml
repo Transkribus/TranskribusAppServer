@@ -4,7 +4,7 @@
 
 	<groupId>eu.transkribus</groupId>
 	<artifactId>TranskribusAppServer</artifactId>
-	<version>0.0.1</version>
+	<version>0.0.2</version>
 	<packaging>jar</packaging>
 	<name>appserver</name>
 	<organization>
@@ -144,7 +144,7 @@
 		<profile>
 			<id>test</id>
 			<activation>
-<!-- 				<activeByDefault>true</activeByDefault> -->
+				<activeByDefault>true</activeByDefault>
 			</activation>
 			<properties>
 				<appName>appserver-test</appName>
@@ -156,7 +156,7 @@
 		<profile>
 			<id>prod</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>
+<!-- 				<activeByDefault>true</activeByDefault> -->
 			</activation>
 			<properties>
 				<appName>appserver</appName>
