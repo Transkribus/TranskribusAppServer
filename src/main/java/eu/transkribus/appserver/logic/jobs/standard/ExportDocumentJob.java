@@ -14,8 +14,6 @@ import javax.xml.transform.TransformerException;
 import org.apache.http.auth.AuthenticationException;
 import org.dea.fimgstoreclient.FimgStorePostClient;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +36,6 @@ import eu.transkribus.persistence.DbConnection;
 import eu.transkribus.persistence.dao.UserDao;
 import eu.transkribus.persistence.io.FimgStoreRwConnection;
 import eu.transkribus.persistence.io.LocalStorage;
-import eu.transkribus.persistence.jobs.abstractJobs.ATrpJob;
 import eu.transkribus.persistence.jobs.htr.util.JobCanceledException;
 import eu.transkribus.persistence.logic.DocManager;
 import eu.transkribus.persistence.util.FimgStoreUtils;

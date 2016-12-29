@@ -18,8 +18,6 @@ import org.dea.dealog.db.exceptions.InvalidDatabaseObjectException;
 import org.dea.dealog.db.exceptions.ValueNotFoundException;
 import org.dea.dealog.db.stmts.InsertStmts;
 import org.dea.dealog.db.stmts.SelectStmts;
-import org.quartz.DisallowConcurrentExecution;
-import org.quartz.PersistJobDataAfterExecution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,8 +41,7 @@ import eu.transkribus.persistence.logic.DocManager;
 import eu.transkribus.persistence.logic.OcrManager;
 import eu.transkribus.persistence.logic.TranscriptManager;
 
-@PersistJobDataAfterExecution
-@DisallowConcurrentExecution
+
 public class OcrJob extends ATrpJobRunnable {
 	private static final Logger logger = LoggerFactory.getLogger(OcrJob.class);
 	

@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.MDC;
-import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,7 +90,7 @@ public class App {
 		}
 	}
 
-	public void shutdown(boolean waitForJobsToComplete) throws SchedulerException {
+	public void shutdown() {
 		logger.info("Shutting down app server");
 		// Shutdown the executors
 		delegator.shutdown();
@@ -103,12 +102,7 @@ public class App {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
-				try {
-					app.shutdown(false);
-				} catch (SchedulerException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				app.shutdown();
 			}
 		});
 	}

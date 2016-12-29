@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
