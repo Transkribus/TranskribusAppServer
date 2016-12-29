@@ -59,7 +59,7 @@ public class CITlabHtrJob extends ATrpJobRunnable {
 	private final String dictName;
 //	private String state = JobConst.STATE_HTR;
 	
-	protected CITlabHtrJob(TrpJobStatus job) {
+	public CITlabHtrJob(TrpJobStatus job) {
 		super(job);
 		modelId = getIntProperty(JobConst.PROP_MODEL_ID);
 		dictName = getProperty(JobConst.PROP_DICTNAME);

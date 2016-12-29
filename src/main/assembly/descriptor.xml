@@ -30,9 +30,10 @@
 				<include>appserver.properties</include>
 				<include>c3p0.properties</include>
 				<include>fimgstore.properties</include>
-				<include>quartz_layoutAnalysis.properties</include>
-				<include>quartz_recognition.properties</include>
-				<include>quartz_utility.properties</include>
+				<include>layoutAnalysis.properties</include>
+				<include>recognition.properties</include>
+				<include>utility.properties</include>
+				<include>upvlc.properties</include>
 				<include>logback.xml</include>
 				<include>solr.properties</include>
 				<include>TranskribusAppServer.sh</include>

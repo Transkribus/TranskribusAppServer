@@ -36,7 +36,7 @@ public class GoobiMetsImportJob extends ADocImportJob {
 	
 	private final String metsPath;
 
-	protected GoobiMetsImportJob(TrpJobStatus job) {
+	public GoobiMetsImportJob(TrpJobStatus job) {
 		super(job);
 		metsPath = getProperty(JobConst.PROP_METS_PATH);
 	}

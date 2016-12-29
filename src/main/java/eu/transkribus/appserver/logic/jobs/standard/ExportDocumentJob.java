@@ -79,7 +79,7 @@ public class ExportDocumentJob extends ATrpJobRunnable {
 	private final Boolean doCreateTitle;
 	private final String useVersionStatus;
 	
-	protected ExportDocumentJob(TrpJobStatus job) {
+	public ExportDocumentJob(TrpJobStatus job) {
 		super(job);
 		options = null; // TODO
 		

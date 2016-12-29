@@ -66,6 +66,7 @@ public class JobDelegator {
 		JobType type = job.getJobImpl().getTask().getJobType();
 		if(executorMap.containsKey(type)){
 			IJobExecutor jex = executorMap.get(type);
+			logger.debug("Submitting job of type " + type + " into queue.");
 			try {
 				jex.submit(job);
 				success = true;

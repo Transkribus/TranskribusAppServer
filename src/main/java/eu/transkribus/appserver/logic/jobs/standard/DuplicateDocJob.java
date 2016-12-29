@@ -47,7 +47,7 @@ public class DuplicateDocJob extends ATrpJobRunnable {
 	//the collection where the duplicate is created
 	private final int colId;
 
-	protected DuplicateDocJob(TrpJobStatus job) {
+	public DuplicateDocJob(TrpJobStatus job) {
 		super(job);
 		title = getProperty(JobConst.PROP_TITLE);
 		colId = getIntProperty(JobConst.PROP_COLLECTION_ID);

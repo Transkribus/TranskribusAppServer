@@ -33,7 +33,7 @@ public class NcsrBatchLaJob extends ALayoutAnalysisJob {
 	protected final boolean doBlockSeg;
 	protected final boolean doLineSeg;
 
-	protected NcsrBatchLaJob(TrpJobStatus job) {
+	public NcsrBatchLaJob(TrpJobStatus job) {
 		super(job);
 		doBlockSeg = getBoolProperty(JobConst.PROP_DO_BLOCK_SEG);
 		doLineSeg = getBoolProperty(JobConst.PROP_DO_LINE_SEG);

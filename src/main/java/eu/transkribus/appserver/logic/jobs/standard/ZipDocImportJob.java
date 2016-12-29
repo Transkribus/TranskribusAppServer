@@ -17,7 +17,7 @@ import eu.transkribus.persistence.jobs.htr.util.JobCanceledException;
 public class ZipDocImportJob extends ADocImportJob {
 	private static final Logger logger = LoggerFactory.getLogger(ZipDocImportJob.class);
 	
-	protected ZipDocImportJob(TrpJobStatus job) {
+	public ZipDocImportJob(TrpJobStatus job) {
 		super(job);
 	}
 	

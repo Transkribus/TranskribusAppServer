@@ -15,7 +15,7 @@ public class DeleteDocJob extends ATrpJobRunnable {
 	
 	private static final Logger logger = LoggerFactory.getLogger(DeleteDocJob.class);
 
-	protected DeleteDocJob(TrpJobStatus job) {
+	public DeleteDocJob(TrpJobStatus job) {
 		super(job);
 	}
 	

@@ -66,7 +66,7 @@ public class CITlabHtrTrainingJob extends ATrpJobRunnable {
 	private TrpDoc gt = null;
 	private TrpDoc testGt = null;
 	
-	protected CITlabHtrTrainingJob(TrpJobStatus job) throws JAXBException {
+	public CITlabHtrTrainingJob(TrpJobStatus job) throws JAXBException {
 		super(job);
 		final String objectStr = (String)jobProps.get(JobConst.PROP_CONFIG);
 		try {

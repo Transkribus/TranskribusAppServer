@@ -23,7 +23,7 @@ public class DocImportJob extends ADocImportJob {
 
 	private static final Logger logger = LoggerFactory.getLogger(DocImportJob.class);
 	
-	protected DocImportJob(TrpJobStatus job) {
+	public DocImportJob(TrpJobStatus job) {
 		super(job);
 	}
 	
