@@ -79,8 +79,9 @@ public class JobDelegator {
 
 	public void shutdown() {
 		for(Entry<JobType, IJobExecutor> e : executorMap.entrySet()){
+			IJobExecutor ex = e.getValue();
 			logger.info("Shutting down job executor for job type: " + e.getKey().toString());
-			e.getValue().shutdown();
+			ex.shutdown();
 		}
 	}
 

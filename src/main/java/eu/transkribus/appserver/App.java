@@ -84,7 +84,7 @@ public class App {
 					}
 				}
 			} catch (SQLException | ReflectiveOperationException e) {
-				logger.error("Could access DB!", e);
+				logger.error("Could not access DB!", e);
 			}
 			// wait for 3 secs
 			Thread.sleep(3000);

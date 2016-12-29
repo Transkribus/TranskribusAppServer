@@ -16,10 +16,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import eu.transkribus.appserver.logic.jobs.abstractjobs.ATrpJobRunnable;
 import eu.transkribus.core.model.beans.job.TrpJobStatus;
 import eu.transkribus.core.model.beans.job.enums.JobImpl;
 import eu.transkribus.core.model.beans.job.enums.JobType;
-import eu.transkribus.persistence.jobs.abstractJobs.ATrpJobRunnable;
 
 public class StandardJobExecutor extends AJobExecutor {
 	private static final Logger logger = LoggerFactory.getLogger(StandardJobExecutor.class);
