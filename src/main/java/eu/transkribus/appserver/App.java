@@ -37,7 +37,7 @@ public class App {
 		final String jobTypes = Config.getString("types");
 		final JobType[] jobTypesArr = parseJobTypes(jobTypes);
 
-//		Config.checkSetup(jobTypesArr);
+		Config.checkSetup(jobTypesArr);
 
 		logger.info("DB Service name: " + DbConnection.getDbServiceName());
 
@@ -78,7 +78,7 @@ public class App {
 					logger.debug(""+j);
 					if(delegator.isConfiguredForJob(j) && jMan.setJobToWaitingState(conn, j)){
 						if(!delegator.delegate(j)) {
-							jMan.resetJob(j);
+							jMan.resetJob(conn, j);
 						}
 					} else {
 						continue;
