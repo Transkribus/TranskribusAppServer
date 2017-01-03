@@ -3,9 +3,7 @@ package eu.transkribus.appserver.logic.jobs.abstractjobs;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 import java.util.UUID;
 
 import javax.xml.bind.JAXBException;
@@ -25,7 +23,7 @@ import eu.transkribus.persistence.logic.TranscriptManager;
 
 public abstract class ALayoutAnalysisJob extends ATrpJobRunnable {
 
-	protected final int transcriptId;
+	protected final Integer transcriptId;
 	protected final String[] props;
 	protected final List<String> regIds;
 	

@@ -205,7 +205,12 @@ public abstract class ATrpJobRunnable extends Observable implements Runnable  {
 	}
 	
 	protected Integer getIntProperty(String key) {
-		return Integer.parseInt(getProperty(key));
+		String propStr = getProperty(key);
+		Integer retVal = null;
+		try {
+			retVal = Integer.parseInt(propStr);
+		} catch (NumberFormatException nfe) {}
+		return retVal;
 	}
 	
 	protected Boolean getBoolProperty(String key) {
