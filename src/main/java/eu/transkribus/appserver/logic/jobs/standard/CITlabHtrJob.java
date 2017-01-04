@@ -99,11 +99,14 @@ public class CITlabHtrJob extends ATrpJobRunnable {
 		}
 		
 		//FIXME get Dict from DB here
-		final String baseDir = "/mnt/dea_scratch/TRP/HTR/RNN";
-		final File dict = new File(baseDir + "/dict/" + dictName);
-		if(!dict.isFile()){
-			setJobStatusFailed("A dictionary by this name does not exist: " + dictName);
-			return;
+		File dict = null;
+		if(dictName != null && !dictName.isEmpty()) {
+			final String baseDir = "/mnt/dea_scratch/TRP/HTR/RNN";
+			dict = new File(baseDir + "/dict/" + dictName);
+			if(!dict.isFile()){
+				setJobStatusFailed("A dictionary by this name does not exist: " + dictName);
+				return;
+			}
 		}
 		
 		setJobStatusProgress("Loading LA module...");
@@ -204,7 +207,7 @@ public class CITlabHtrJob extends ATrpJobRunnable {
 			setJobStatusProgress("Running HTR on page: " + p.getPageNr());			
 //			String[] setProperty = PropertyUtil.setProperty(null, "raw", r.nextBoolean() ? "true" : "false");
             
-			htrParser.process(net.getAbsolutePath(), dict.getAbsolutePath(), null, i, pc,
+			htrParser.process(net.getAbsolutePath(), dict == null ? null : dict.getAbsolutePath(), null, i, pc,
 					workDir.getAbsolutePath(), null, new String[]{});
 			setJobStatusProgress("HTR done on page: " + p.getPageNr() + ". Storing...");
 			

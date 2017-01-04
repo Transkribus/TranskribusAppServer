@@ -41,8 +41,11 @@ public class StandardJobExecutor extends AJobExecutor {
 
 	@Override
 	public void submit(final TrpJobStatus j) throws RejectedExecutionException {
-		//TODO Check if there are resources available to submit the job into the queue
-
+		//Check if there are resources available to submit the job into the queue
+		if(ex.getActiveCount() >= ex.getMaximumPoolSize()) {
+			logger.debug("Got " + ex.getActiveCount() + " active threads and maxPoolSize is " + ex.getMaximumPoolSize());
+			throw new RejectedExecutionException("Threadpool is exceeded at the moment.");
+		}
 		JobImpl impl = j.getJobImpl();
 		final String clazzName = JOBS_PACKAGE + impl.getClassName();
 		ATrpJobRunnable o;
