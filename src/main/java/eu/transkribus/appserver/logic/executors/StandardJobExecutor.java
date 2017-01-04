@@ -23,10 +23,10 @@ import eu.transkribus.core.model.beans.job.enums.JobType;
 
 public class StandardJobExecutor extends AJobExecutor {
 	private static final Logger logger = LoggerFactory.getLogger(StandardJobExecutor.class);
-	private static Map<String, Future<?>> futMap;
-	private static BlockingQueue<Runnable> q;
-	private static ThreadFactory tf;
-	private static ThreadPoolExecutor ex;
+	private Map<String, Future<?>> futMap;
+	private BlockingQueue<Runnable> q;
+	private ThreadFactory tf;
+	private ThreadPoolExecutor ex;
 	
 	private final static String JOBS_PACKAGE = "eu.transkribus.appserver.logic.jobs.standard.";
 	

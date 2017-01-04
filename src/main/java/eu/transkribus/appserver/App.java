@@ -75,9 +75,9 @@ public class App {
 				List<TrpJobStatus> jobs = jMan.getPendingJobs(conn);
 				for(TrpJobStatus j : jobs) {
 					logger.info("Found pending job with impl: " + j.getJobImpl());
-					logger.debug(""+j);
 					//check if delegator is configured for job type and try checking out the job, i.e. setting it to waiting state
 					if(delegator.isConfiguredForJob(j)) {
+						logger.debug(""+j);
 						if(jMan.setJobToWaitingState(conn, j)){
 							//if that worked, actually schedule the job
 							if(!delegator.delegate(j)) {
@@ -86,6 +86,7 @@ public class App {
 							}
 						}
 					} else {
+						logger.debug("Appserver is not configured for this job.");
 						continue;
 					}
 				}
