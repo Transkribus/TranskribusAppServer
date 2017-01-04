@@ -77,11 +77,13 @@ public class App {
 					logger.info("Found pending job with impl: " + j.getJobImpl());
 					logger.debug(""+j);
 					//check if delegator is configured for job type and try checking out the job, i.e. setting it to waiting state
-					if(delegator.isConfiguredForJob(j) && jMan.setJobToWaitingState(conn, j)){
-						//if that worked, actually schedule the job
-						if(!delegator.delegate(j)) {
-							//if that fails, release the job again
-							jMan.resetJob(conn, j);
+					if(delegator.isConfiguredForJob(j)) {
+						if(jMan.setJobToWaitingState(conn, j)){
+							//if that worked, actually schedule the job
+							if(!delegator.delegate(j)) {
+								//if that fails, release the job again
+								jMan.resetJob(conn, j);
+							}
 						}
 					} else {
 						continue;
