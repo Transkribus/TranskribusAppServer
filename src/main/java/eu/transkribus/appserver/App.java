@@ -76,19 +76,24 @@ public class App {
 				for(TrpJobStatus j : jobs) {
 					logger.info("Found pending job with impl: " + j.getJobImpl());
 					//check if delegator is configured for job type and try checking out the job, i.e. setting it to waiting state
-					if(delegator.isConfiguredForJob(j)) {
-						logger.debug(""+j);
-						if(jMan.setJobToWaitingState(conn, j)){
-							//if that worked, actually schedule the job
-							if(!delegator.delegate(j)) {
-								//if that fails, release the job again
-								jMan.resetJob(conn, j);
-							}
-						}
-					} else {
+					if(!delegator.isConfiguredForJob(j)) {
 						logger.debug("Appserver is not configured for this job.");
 						continue;
 					}
+							
+					if(!delegator.hasResources(j)) {
+						logger.debug("All threads are busy in job queue.");
+						continue;
+					}
+//					logger.debug(""+j);
+					if(jMan.setJobToWaitingState(conn, j)){
+						//if that worked, actually schedule the job
+						if(!delegator.delegate(j)) {
+							//if that fails, release the job again
+							jMan.resetJob(conn, j);
+						}
+					}
+					
 				}
 			} catch (SQLException | ReflectiveOperationException e) {
 				logger.error("Could not access DB!", e);

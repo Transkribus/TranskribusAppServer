@@ -4,8 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -89,5 +87,11 @@ public class JobDelegator {
 	public boolean isConfiguredForJob(TrpJobStatus j) {
 		JobType type = j.getJobImpl().getTask().getJobType();
 		return executorMap.containsKey(type);
+	}
+
+	public boolean hasResources(TrpJobStatus j) {
+		JobType type = j.getJobImpl().getTask().getJobType();
+		IJobExecutor ex = executorMap.get(type);
+		return ex.hasResources();
 	}
 }	

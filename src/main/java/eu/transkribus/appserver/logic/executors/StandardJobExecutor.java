@@ -78,4 +78,9 @@ public class StandardJobExecutor extends AJobExecutor {
 			logger.error("Error shutting down executor: "+e.getMessage(), e);
 		}
 	}
+
+	@Override
+	public boolean hasResources() {
+		return ex.getActiveCount() < ex.getMaximumPoolSize();
+	}
 }
