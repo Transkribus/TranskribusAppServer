@@ -29,9 +29,12 @@ public class DummyJob extends ATrpJobRunnable {
 					
 			
 			logger.info("Dummy job says: " + msg);
+			
+			Thread.sleep(10000);
+			
 			logger.info("Job status = " + job.toString());
 			
-		} catch(IOException e){
+		} catch(IOException | InterruptedException e){
 			this.setJobStatusFailed(e.getMessage());
 			logger.error("Exception in Dummy job!", e);
 		}

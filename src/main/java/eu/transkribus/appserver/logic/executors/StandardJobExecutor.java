@@ -81,6 +81,7 @@ public class StandardJobExecutor extends AJobExecutor {
 
 	@Override
 	public boolean hasResources() {
-		return ex.getActiveCount() < ex.getMaximumPoolSize();
+		logger.debug("Active: " + ex.getActiveCount() + " - corePoolSize: " + ex.getCorePoolSize());
+		return ex.getActiveCount() < ex.getCorePoolSize();
 	}
 }
