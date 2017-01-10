@@ -81,6 +81,11 @@ public class StandardJobExecutor extends AJobExecutor {
 
 	@Override
 	public boolean hasResources() {
+		/*
+		 * for some reason threadpoolexecutor does not create more threads than corePoolSize
+		 * Thus, we only allow so many jobs to be put into the executor and the others stay in DB
+		 */
+		
 		logger.debug("Active: " + ex.getActiveCount() + " - corePoolSize: " + ex.getCorePoolSize());
 		return ex.getActiveCount() < ex.getCorePoolSize();
 	}
