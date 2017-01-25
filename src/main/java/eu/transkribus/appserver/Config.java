@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.transkribus.core.io.util.AConf;
 import eu.transkribus.core.model.beans.job.enums.JobImpl;
 import eu.transkribus.core.model.beans.job.enums.JobType;
 import eu.transkribus.persistence.TrpPersistenceConf;
@@ -55,7 +54,7 @@ public class Config {
 		logger.debug("Load properties file: " + filename);
 		Properties props = new Properties();
 
-		try(InputStream is = AConf.class.getClassLoader().getResourceAsStream(filename)){
+		try(InputStream is = Config.class.getClassLoader().getResourceAsStream(filename)){
 			props.load(is);
 		} catch (Exception e) {
 			logger.debug("Could not find properties file: " + filename);
