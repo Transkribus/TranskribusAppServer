@@ -7,14 +7,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+import eu.transkribus.core.io.util.TrpProperties;
 import eu.transkribus.core.model.beans.job.TrpJobStatus;
-import eu.transkribus.core.rest.JobConst;
 import eu.transkribus.persistence.jobs.htr.util.JobCanceledException;
 import eu.transkribus.persistence.logic.JobManager;
 import eu.transkribus.persistence.util.MailUtils;
@@ -22,12 +21,12 @@ import eu.transkribus.persistence.util.MailUtils;
 public abstract class ATrpJobRunnable extends Observable implements Runnable  {
 	protected static final Logger logger = LoggerFactory.getLogger(ATrpJobRunnable.class);
 	protected TrpJobStatus job;
-	protected Properties jobProps;
+	protected TrpProperties jobProps;
 	protected JobManager jMan;
 	
 	protected ATrpJobRunnable(final TrpJobStatus job) {
 		this.job = job;
-		this.jobProps = job.getJobDataProps();
+		this.jobProps = new TrpProperties(job.getJobData(), false);
 		this.jMan = new JobManager();
 	}
 	
@@ -185,6 +184,26 @@ public abstract class ATrpJobRunnable extends Observable implements Runnable  {
 		}
 	}
 	
+	public String getProperty(String key) {
+		return jobProps.getProperty(key);
+	}
+	
+	public Integer getIntProperty(String key) {
+		return jobProps.getIntProperty(key);
+	}
+	
+	public Boolean getBoolProperty(String key) {
+		return jobProps.getBoolProperty(key);
+	}
+	
+	public List<String> getStringListProperty(String key) {
+		return jobProps.getStringListProperty(key);
+	}
+	
+	public List<Integer> getIntListProperty(String key) {
+		return jobProps.getIntListProperty(key);
+	}
+	
 	protected class JobUpdateObserver implements Observer {
 		public JobUpdateObserver() {}
 
@@ -199,46 +218,5 @@ public abstract class ATrpJobRunnable extends Observable implements Runnable  {
 			}
 		}
 	}
-	
-	protected String getProperty(String key) {
-		return jobProps.getProperty(key);
-	}
-	
-	protected Integer getIntProperty(String key) {
-		String propStr = getProperty(key);
-		Integer retVal = null;
-		try {
-			retVal = Integer.parseInt(propStr);
-		} catch (NumberFormatException nfe) {}
-		return retVal;
-	}
-	
-	protected Boolean getBoolProperty(String key) {
-		return Boolean.parseBoolean(getProperty(key));
-	}
-	
-	protected List<String> getStringListProperty(String key) {
-		List<String> result = new LinkedList<>();
-		String str = jobProps.getProperty(key);
-		if(str != null && !str.isEmpty()) {
-			String[] arr = str.split(",");
-			for(String s : arr) {
-				result.add(s);
-			}
-		}
-		return result;
-	}
-	
-	protected List<Integer> getIntListProperty(String key) {
-		List<Integer> result = new LinkedList<>();
-		String str = jobProps.getProperty(key);
-		if(str != null && !str.isEmpty()) {
-			String[] arr = str.split(",");
-			for(String s : arr) {
-				result.add(Integer.parseInt(s));
-			}
-		}
-		return result;
-	}
-	
+		
 }
