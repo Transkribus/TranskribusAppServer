@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import eu.transkribus.core.model.beans.job.enums.JobImpl;
 import eu.transkribus.core.model.beans.job.enums.JobType;
 import eu.transkribus.persistence.TrpPersistenceConf;
